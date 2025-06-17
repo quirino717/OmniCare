@@ -38,7 +38,7 @@ def generate_launch_description():
             # 'namespace': LaunchConfiguration('namespace'),
             'use_namespace': 'False',
             'slam': 'False',
-            'map': [get_package_share_directory('navigation_pkg'),'/config/map/tcc_presentation_3.yaml'],
+            'map': [get_package_share_directory('navigation_pkg'),'/config/map/maps/QuintoAndarFull.yaml'],
             'use_sim_time': 'False',
             # 'params_file': [get_package_share_directory('nav2_bringup'),'/params/nav2_params.yaml'],
             'params_file': [get_package_share_directory('navigation_pkg'),'/config/nav/nav2_params.yaml'],
@@ -54,7 +54,7 @@ def generate_launch_description():
         executable='checkpoints',
         name='checkpoints',
         parameters=[{
-            'checkpoints_file': get_package_share_directory('navigation_pkg')+'/config/map/presentation_checkpoints.json'
+            'checkpoints_file': get_package_share_directory('navigation_pkg')+'/config/map/checkpoints/presentation_checkpoints.json'
         }],
         arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
     )
