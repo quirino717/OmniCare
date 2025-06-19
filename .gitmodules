@@ -10,3 +10,6 @@
 	path = software/src/omnicare_navigation/rplidar_ros
 	url = https://github.com/Thgm01/rplidar_ros.git
 	branch = ros2
+[submodule "software/src/omnicare_vision/usb_cam"]
+	path = software/src/omnicare_vision/usb_cam
+	url = https://github.com/Thgm01/usb_cam
