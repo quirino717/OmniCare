@@ -9,6 +9,7 @@ SensorDataQoS = QoSProfile(
 )
 
 from sensor_msgs.msg import Image
+from std_msgs.msg import Int8
 from omnicare_msgs.srv import OnOffNode
 
 from ament_index_python.packages import get_package_share_directory
@@ -19,7 +20,7 @@ from cv_bridge import CvBridge
 
 class FloorDetector(Node):
     def __init__(self):
-        super().__init__('flor_detector_node')
+        super().__init__('flor_detector')
         self.srv = self.create_service(OnOffNode,
                                        "floor_detector/OnOffNode",
                                        self.on_off_node_callbalck)
@@ -30,15 +31,16 @@ class FloorDetector(Node):
         self.bridge = CvBridge()
         self.get_logger().debug("CV Bridge initialized")
 
-        self.timer_main = self.create_timer(0.008, self.main_callback)
+        self.floor_publisher = self.create_publisher(Int8,
+                                                     "floor_detector/atual_floor",
+                                                     SensorDataQoS)
 
         self.declare_parameter("model", f"{get_package_share_directory('floor_detector')}/weights/yolo11n.pt")
-        self.model = YOLO(self.get_parameter("model").get_parameter_value().string_value) # Load model
-        self.value_classes = self.get_classes()  # define antes de usar
+        self.model = YOLO(self.get_parameter("model").get_parameter_value().string_value)
+        self.value_classes = self.get_classes() 
         self.get_logger().info(f"CLASSES DO MODELO: {self.value_classes}")
         print(self.get_parameter("model").get_parameter_value().string_value)
 
-        
     def on_off_node_callbalck(self, request, response):
         self.get_logger().info(f"Incoming request\nActivate: {request.activate}")
         response.result = True
@@ -62,23 +64,25 @@ class FloorDetector(Node):
     
     def cam_subscriber_callback(self, msg):
         self.image_raw = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        results = self.model(self.image_raw, verbose=False)[0]
+        annotated_frame = results.plot()
+        self.detect_floor(results)
+        cv2.imshow("YOLO11 Tracking", annotated_frame)
+        cv2.waitKey(1)
 
-        
+    def detect_floor(self, results):
+        floor_msg = Int8()
+        if len(results.boxes) == 0:
+            return
+        floor_msg.data = int(results.boxes[0].cls)
+        self.floor_publisher.publish(floor_msg)
+
+
     def get_classes(self): 
         classes = self.model.names
         value_classes = {value: key for key, value in classes.items()}
         return value_classes
-
-
-    def main_callback(self):
-        if self.__nodeActivate:
-            try:
-                cv2.imshow("Image Raw", self.image_raw)
-                cv2.waitKey(1)
-            except:
-                pass    
-        
-
+    
 
 def main(args=None):
     rclpy.init(args=args)
