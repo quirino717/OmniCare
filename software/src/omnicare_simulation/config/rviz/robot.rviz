@@ -7,8 +7,9 @@ Panels:
         - /Global Options1
         - /Odometry1
         - /Odometry1/Covariance1
+        - /Image2
       Splitter Ratio: 0.5
-    Tree Height: 822
+    Tree Height: 668
   - Class: rviz_common/Views
     Expanded:
       - /Current View1
@@ -63,6 +64,22 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
         base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        camera_link_optical:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        lidar_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -280,6 +297,14 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
+        camera_link:
+          Value: true
+        camera_link_optical:
+          Value: true
+        imu_link:
+          Value: true
+        lidar_link:
+          Value: true
         odom:
           Value: true
         roda:
@@ -288,6 +313,78 @@ Visualization Manager:
           Value: true
         roda_3:
           Value: true
+        rolete:
+          Value: true
+        rolete_10:
+          Value: true
+        rolete_11:
+          Value: true
+        rolete_12:
+          Value: true
+        rolete_13:
+          Value: true
+        rolete_14:
+          Value: true
+        rolete_15:
+          Value: true
+        rolete_16:
+          Value: true
+        rolete_17:
+          Value: true
+        rolete_18:
+          Value: true
+        rolete_19:
+          Value: true
+        rolete_2:
+          Value: true
+        rolete_20:
+          Value: true
+        rolete_21:
+          Value: true
+        rolete_22:
+          Value: true
+        rolete_23:
+          Value: true
+        rolete_24:
+          Value: true
+        rolete_25:
+          Value: true
+        rolete_26:
+          Value: true
+        rolete_27:
+          Value: true
+        rolete_28:
+          Value: true
+        rolete_29:
+          Value: true
+        rolete_3:
+          Value: true
+        rolete_30:
+          Value: true
+        rolete_31:
+          Value: true
+        rolete_32:
+          Value: true
+        rolete_33:
+          Value: true
+        rolete_34:
+          Value: true
+        rolete_35:
+          Value: true
+        rolete_36:
+          Value: true
+        rolete_4:
+          Value: true
+        rolete_5:
+          Value: true
+        rolete_6:
+          Value: true
+        rolete_7:
+          Value: true
+        rolete_8:
+          Value: true
+        rolete_9:
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -295,13 +392,90 @@ Visualization Manager:
       Show Names: false
       Tree:
         odom:
-          base_link:
-            base:
-              roda:
+          base_footprint:
+            base_link:
+              base:
+                roda:
+                  rolete:
+                    {}
+                  rolete_10:
+                    {}
+                  rolete_11:
+                    {}
+                  rolete_12:
+                    {}
+                  rolete_2:
+                    {}
+                  rolete_3:
+                    {}
+                  rolete_4:
+                    {}
+                  rolete_5:
+                    {}
+                  rolete_6:
+                    {}
+                  rolete_7:
+                    {}
+                  rolete_8:
+                    {}
+                  rolete_9:
+                    {}
+                roda_2:
+                  rolete_13:
+                    {}
+                  rolete_14:
+                    {}
+                  rolete_15:
+                    {}
+                  rolete_16:
+                    {}
+                  rolete_17:
+                    {}
+                  rolete_18:
+                    {}
+                  rolete_19:
+                    {}
+                  rolete_20:
+                    {}
+                  rolete_21:
+                    {}
+                  rolete_22:
+                    {}
+                  rolete_23:
+                    {}
+                  rolete_24:
+                    {}
+                roda_3:
+                  rolete_25:
+                    {}
+                  rolete_26:
+                    {}
+                  rolete_27:
+                    {}
+                  rolete_28:
+                    {}
+                  rolete_29:
+                    {}
+                  rolete_30:
+                    {}
+                  rolete_31:
+                    {}
+                  rolete_32:
+                    {}
+                  rolete_33:
+                    {}
+                  rolete_34:
+                    {}
+                  rolete_35:
+                    {}
+                  rolete_36:
+                    {}
+              camera_link:
+                camera_link_optical:
+                  {}
+              imu_link:
                 {}
-              roda_2:
-                {}
-              roda_3:
+              lidar_link:
                 {}
       Update Interval: 0
       Value: true
@@ -392,6 +566,20 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /odometry/filtered
       Value: true
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image
+      Normalize Range: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /camera/image_raw
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -407,7 +595,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 7.087941646575928
+      Distance: 9.990618705749512
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -430,14 +618,14 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1043
+  Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000001000000000000019b000003b9fc0200000003fb000000100044006900730070006c006100790073010000003d000003b9000000c900fffffffb0000000a0056006900650077007300000001e50000010c000000a400fffffffb0000000a0049006d006100670065000000028f000001670000002800ffffff000005df000003b900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000001000000000000019b0000039efc0200000006fb000000100044006900730070006c006100790073010000003d0000031f000000c900fffffffb0000000a0056006900650077007300000001e50000010c000000a400fffffffb0000000a0049006d006100670065000000028f000001670000002800fffffffb0000000a0049006d0061006700650100000362000000790000002800fffffffb0000000c00430061006d0065007200610000000310000000cb0000000000000000fb0000000c00430061006d006500720061000000032c000000af0000000000000000000005990000039e00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: false
-  Width: 1920
-  X: 1920
-  Y: 0
+  Width: 1850
+  X: 70
+  Y: 27

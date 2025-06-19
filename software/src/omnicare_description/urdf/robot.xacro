@@ -10,6 +10,7 @@
         <xacro:include filename="$(find omnicare_description)/urdf/ros2_control.xacro" />
     </xacro:unless>
 
+    <xacro:include filename="$(find omnicare_description)/urdf/camera.xacro"/>
 
     <link name="lidar_link"></link>
     <joint name="lidar_to_base" type="fixed">
