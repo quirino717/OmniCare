@@ -12,8 +12,12 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 
 set(msg_files
+  # MSG
   "msg/MotorsPWM.msg"
   "msg/MotorsData.msg"
+
+  # SRV
+  "srv/OnOffNode.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
