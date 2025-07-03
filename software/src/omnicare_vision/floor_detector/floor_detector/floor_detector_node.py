@@ -3,7 +3,7 @@ from rclpy.node import Node
 
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy
 SensorDataQoS = QoSProfile(
-    depth=10,
+    depth=1,
     reliability=QoSReliabilityPolicy.BEST_EFFORT,
     durability=QoSDurabilityPolicy.VOLATILE
 )
@@ -21,7 +21,7 @@ from cv_bridge import CvBridge
 
 class FloorDetector(Node):
     def __init__(self):
-        super().__init__('flor_detector')
+        super().__init__('floor_detector')
         self.srv = self.create_service(OnOffNode,
                                        "floor_detector/OnOffNode",
                                        self.on_off_node_callbalck)
@@ -78,7 +78,8 @@ class FloorDetector(Node):
     def detect_floor(self, img):
         floor_msg = Int8()
         
-        display_results = self.model_display(self.image_raw, verbose=False)[0]
+        display_results = self.model_display(self.image_raw, verbose=True)[0]
+
         annotated_frame = display_results.plot()
         cv2.imshow("YOLO11 Tracking", annotated_frame)
         cv2.waitKey(1)
@@ -89,20 +90,45 @@ class FloorDetector(Node):
         display_img = self.find_display(img, display_results)
         self.display_publisher.publish(self.bridge.cv2_to_imgmsg(display_img))
         
-        floor_results = self.model_floor(display_img, vebose=False)[0]
-        floor_filtered = self.filter_floor_detection(floor_results)
+        # Model was treined with 640x640 with filled edges
+        display_img = self.preprocessing_display_img(display_img, size=640)
+        
+        floor_results = self.model_floor(display_img, verbose=False)[0]
+        # floor_filtered = self.filter_floor_detection(floor_results)
         
         # floor_msg.data = int(results.boxes[0].cls)
         # self.floor_publisher.publish(floor_msg)
 
     def find_display(self, img, results):
         
-        if len(results) == 0:
+        if len(results.boxes) == 0:
             return
         _ = results.boxes[0].xyxy.tolist()[0] # Get xyxy position of BoundingBox
         int_xyxy = [int(float(x)) for x in _]
         return img[int_xyxy[1]:int_xyxy[3], int_xyxy[0]:int_xyxy[2]].copy() 
     
+    def preprocessing_display_img(self, img, size):
+        h, w = img.shape[:2]
+        
+        # Calculate the scale for resize mantain the proportion
+        scale = size / max(h, w)
+        new_h, new_w = int(h * scale), int(w * scale)
+        resized_img = cv2.resize(img, (new_w, new_h), cv2.INTER_LINEAR)
+
+        d_h, d_w = size - new_h, size - new_w
+
+        # d_h - (d_h // 2) is for odd sizes
+        # Ex: d_h = 5, top = 2 bottom = 3
+        top, bottom = d_h // 2, d_h - (d_h // 2)
+        left, right = d_w // 2, d_w - (d_w // 2)
+        # Fill edges with black
+        preprossed_img = cv2.copyMakeBorder(resized_img,
+                                            top, bottom, left, right,
+                                            cv2.BORDER_CONSTANT, value=0)
+
+        return preprossed_img
+
+
     # TODO: terminar essa funcao
     def filter_floor_detection(self, results):
         floor = self.model_floor.names[results.boxes[0].cls]
