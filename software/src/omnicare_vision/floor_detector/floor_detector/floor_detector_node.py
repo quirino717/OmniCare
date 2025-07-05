@@ -57,7 +57,7 @@ class FloorDetector(Node):
         if self.__nodeActivate:
             try:
                 self.cam_subscriber = self.create_subscription(Image,
-                                                               'camera1/image_raw',
+                                                               '/image_raw',
                                                                self.cam_subscriber_callback,
                                                                SensorDataQoS)
             except:
@@ -132,7 +132,6 @@ class FloorDetector(Node):
         self.last_detections.append(floor)
         last_detections_counter = Counter(self.last_detections)
         mode = last_detections_counter.most_common(1)[0][0] # Get the mode of last detections
-        print(mode)
         return mode
 
 def main(args=None):
