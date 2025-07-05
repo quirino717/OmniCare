@@ -9,7 +9,7 @@ SensorDataQoS = QoSProfile(
 )
 
 from sensor_msgs.msg import Image
-from std_msgs.msg import Int8
+from std_msgs.msg import String
 from omnicare_msgs.srv import OnOffNode
 
 from ament_index_python.packages import get_package_share_directory
@@ -32,7 +32,7 @@ class FloorDetector(Node):
         self.bridge = CvBridge()
         self.get_logger().debug("CV Bridge initialized")
 
-        self.floor_publisher = self.create_publisher(Int8,
+        self.floor_publisher = self.create_publisher(String,
                                                      "floor_detector/atual_floor",
                                                      SensorDataQoS)
         
@@ -45,7 +45,7 @@ class FloorDetector(Node):
         self.model_display = YOLO(self.get_parameter("model_display").get_parameter_value().string_value)
         
         self.declare_parameter("model_floor", f"{get_package_share_directory('floor_detector')}/weights/best_floor.pt")
-        self.model_floor = YOLO(self.get_parameter("model_display").get_parameter_value().string_value)
+        self.model_floor = YOLO(self.get_parameter("model_floor").get_parameter_value().string_value)
 
         self.last_detections = deque(maxlen=10)
 
@@ -74,11 +74,10 @@ class FloorDetector(Node):
         self.image_raw = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.detect_floor(self.image_raw.copy())
 
-    # TODO: Terminar        
     def detect_floor(self, img):
-        floor_msg = Int8()
+        floor_msg = String()
         
-        display_results = self.model_display(self.image_raw, verbose=True)[0]
+        display_results = self.model_display(self.image_raw, verbose=False)[0]
 
         annotated_frame = display_results.plot()
         cv2.imshow("YOLO11 Tracking", annotated_frame)
@@ -87,18 +86,18 @@ class FloorDetector(Node):
         if len(display_results.boxes) == 0:
             return
         
+        # finds first the elevator display
         display_img = self.find_display(img, display_results)
         self.display_publisher.publish(self.bridge.cv2_to_imgmsg(display_img))
         
         # Model was treined with 640x640 with filled edges
         display_img = self.preprocessing_display_img(display_img, size=640)
-        
+        # Classification of the elevator display
         floor_results = self.model_floor(display_img, verbose=False)[0]
-        # floor_filtered = self.filter_floor_detection(floor_results)
-        
-        # floor_msg.data = int(results.boxes[0].cls)
-        # self.floor_publisher.publish(floor_msg)
 
+        floor_filtered = self.filter_floor_detection(floor_results)
+        floor_msg.data = floor_filtered
+        self.floor_publisher.publish(floor_msg)
     def find_display(self, img, results):
         
         if len(results.boxes) == 0:
@@ -128,18 +127,13 @@ class FloorDetector(Node):
 
         return preprossed_img
 
-
-    # TODO: terminar essa funcao
     def filter_floor_detection(self, results):
-        floor = self.model_floor.names[results.boxes[0].cls]
-        print(floor)
-        
-        # self.last_detections.append(floor)
-        # last_detections_counter = Counter(self.last_detections)
-        # mode = last_detections_counter(1)[0][0] # Get the mode of last detections
-        
-        # return mode
-    
+        floor = results.names[results.probs.top5[0]]        
+        self.last_detections.append(floor)
+        last_detections_counter = Counter(self.last_detections)
+        mode = last_detections_counter.most_common(1)[0][0] # Get the mode of last detections
+        print(mode)
+        return mode
 
 def main(args=None):
     rclpy.init(args=args)
