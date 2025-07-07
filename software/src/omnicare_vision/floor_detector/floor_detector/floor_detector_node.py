@@ -41,11 +41,16 @@ class FloorDetector(Node):
                                                        SensorDataQoS)
         
 
-        self.declare_parameter("model_display", f"{get_package_share_directory('floor_detector')}/weights/best_display.pt")
-        self.model_display = YOLO(self.get_parameter("model_display").get_parameter_value().string_value)
+        self.declare_parameter("model_display", f"{get_package_share_directory('floor_detector')}/weights/best_display.engine")
+        self.model_display = YOLO(self.get_parameter("model_display").get_parameter_value().string_value, task='detect')
+        self.get_logger().debug(f'Display Model path: {self.get_parameter("model_display").get_parameter_value().string_value}')
+
         
-        self.declare_parameter("model_floor", f"{get_package_share_directory('floor_detector')}/weights/best_floor.pt")
-        self.model_floor = YOLO(self.get_parameter("model_floor").get_parameter_value().string_value)
+        self.declare_parameter("model_floor", f"{get_package_share_directory('floor_detector')}/weights/best_floor.engine")
+        self.model_floor = YOLO(self.get_parameter("model_floor").get_parameter_value().string_value, task='classify')
+        self.get_logger().debug(f'Floor Model path: {self.get_parameter("model_floor").get_parameter_value().string_value}')
+
+        self.get_logger().info('Floor detector node initialized')
 
         self.last_detections = deque(maxlen=10)
 
@@ -57,7 +62,7 @@ class FloorDetector(Node):
         if self.__nodeActivate:
             try:
                 self.cam_subscriber = self.create_subscription(Image,
-                                                               '/image_raw',
+                                                               '/camera1/image_raw',
                                                                self.cam_subscriber_callback,
                                                                SensorDataQoS)
             except:
@@ -71,6 +76,7 @@ class FloorDetector(Node):
         return response
     
     def cam_subscriber_callback(self, msg):
+        self.get_logger().debug('Received an image')
         self.image_raw = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.detect_floor(self.image_raw.copy())
 
@@ -79,9 +85,9 @@ class FloorDetector(Node):
         
         display_results = self.model_display(self.image_raw, verbose=False)[0]
 
-        annotated_frame = display_results.plot()
-        cv2.imshow("YOLO11 Tracking", annotated_frame)
-        cv2.waitKey(1)
+        # annotated_frame = display_results.plot()
+        # cv2.imshow("YOLO11 Tracking", annotated_frame)
+        # cv2.waitKey(1)
 
         if len(display_results.boxes) == 0:
             return
@@ -98,8 +104,8 @@ class FloorDetector(Node):
         floor_filtered = self.filter_floor_detection(floor_results)
         floor_msg.data = floor_filtered
         self.floor_publisher.publish(floor_msg)
-    def find_display(self, img, results):
-        
+    
+    def find_display(self, img, results):    
         if len(results.boxes) == 0:
             return
         _ = results.boxes[0].xyxy.tolist()[0] # Get xyxy position of BoundingBox

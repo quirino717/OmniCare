@@ -13,6 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/weights', glob('weights/*')),
+        ('share/' + package_name + '/launch', glob('launch/*'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,
