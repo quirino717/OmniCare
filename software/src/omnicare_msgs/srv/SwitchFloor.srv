@@ -1,0 +1,7 @@
+string map_path
+float64 x
+float64 y
+float64 yaw
+---
+bool success
+string message
