@@ -1,0 +1,93 @@
+<?xml version="1.0" ?>
+<!-- Generated using onshape-to-robot -->
+<!-- Onshape https://cad.onshape.com/documents/8ad4b3e8e68952b2f8c65a07/w/3c1f775842712cbb585088e7/e/2e75ac6943677df920499bc9 -->
+<robot name="manipulator">
+  <!-- Link link_1_manip -->
+  <link name="link_1_manip">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1e-09"/>
+      <inertia ixx="1e-09" ixy="0" ixz="0" iyy="1e-09" iyz="0" izz="1e-09"/>
+    </inertial>
+    <!-- Part link_1_manip -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find omnicare_manipulator)/meshes/link_1_manip.stl"/>
+      </geometry>
+      <material name="link_1_manip_material">
+        <color rgba="0.647059 0.647059 0.647059 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find omnicare_manipulator)/meshes/link_1_manip.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Link link_2_manip -->
+  <link name="link_2_manip">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1e-09"/>
+      <inertia ixx="1e-09" ixy="0" ixz="0" iyy="1e-09" iyz="0" izz="1e-09"/>
+    </inertial>
+    <!-- Part link_2_manip -->
+    <visual>
+      <origin xyz="-0.322023 -0.0908839 -0.358902" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find omnicare_manipulator)/meshes/link_2_manip.stl"/>
+      </geometry>
+      <material name="link_2_manip_material">
+        <color rgba="0.615686 0.811765 0.929412 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.322023 -0.0908839 -0.358902" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="file://$(find omnicare_manipulator)/meshes/link_2_manip.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Link end_effector -->
+  <link name="end_effector">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1e-09"/>
+      <inertia ixx="1e-09" ixy="0" ixz="0" iyy="1e-09" iyz="0" izz="1e-09"/>
+    </inertial>
+    <!-- Part end_effector -->
+    <visual>
+      <origin xyz="-0.246085 -0.514643 0.0549023" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find omnicare_manipulator)/meshes/end_effector.stl"/>
+      </geometry>
+      <material name="end_effector_material">
+        <color rgba="0.231373 0.380392 0.705882 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.246085 -0.514643 0.0549023" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="file://$(find omnicare_manipulator)/meshes/end_effector.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- Joint from link_2_manip to end_effector -->
+  <joint name="link2_to_ee" type="prismatic">
+    <origin xyz="0.035 -0.06 0.025" rpy="1.5708 4.67099e-46 1.5708"/>
+    <parent link="link_2_manip"/>
+    <child link="end_effector"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-1" upper="1"/>
+  </joint>
+  <!-- Joint from link_1_manip to link_2_manip -->
+  <joint name="link1_to_link2" type="prismatic">
+    <origin xyz="5.55112e-17 -6.07847e-15 0.35625" rpy="0 2.96059e-16 0"/>
+    <parent link="link_1_manip"/>
+    <child link="link_2_manip"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-1" upper="1"/>
+  </joint>
+</robot>

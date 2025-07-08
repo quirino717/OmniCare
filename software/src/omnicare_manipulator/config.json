@@ -1,0 +1,9 @@
+{
+    "url": "https://cad.onshape.com/documents/8ad4b3e8e68952b2f8c65a07/w/3c1f775842712cbb585088e7/e/2e75ac6943677df920499bc9",
+    "output_format": "urdf",
+    "output_filename": "manipulator",
+    "assets_dir": "meshes",
+    "robot_name": "manipulator",
+
+    "package_name": "description_simulator_tcc"
+}
