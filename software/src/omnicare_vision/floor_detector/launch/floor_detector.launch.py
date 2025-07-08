@@ -5,17 +5,11 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-import os
+import subprocess
 import platform
 
 def generate_launch_description():
     floor_detector_dir = get_package_share_path('floor_detector')
-
-    # If using jetson uses engine yolo format
-    yolo_format = 'pt'
-    system_architecture = platform.processor() # Get system architecture 
-    if(system_architecture == 'aarch64'):
-        yolo_format = 'engine'
 
     log_level = DeclareLaunchArgument(
         name='log_level', 
@@ -29,8 +23,8 @@ def generate_launch_description():
         executable='floor_detector_node',
         output='screen',
         parameters=[{
-            'model_display': f'{floor_detector_dir}/weights/best_display.{yolo_format}',
-            'model_floor': f'{floor_detector_dir}/weights/best_floor.{yolo_format}'
+            'model_display': f'{floor_detector_dir}/weights/best_display',
+            'model_floor': f'{floor_detector_dir}/weights/best_floor'
         }],
         arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')]
     )

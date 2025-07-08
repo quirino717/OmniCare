@@ -14,6 +14,8 @@ from omnicare_msgs.srv import OnOffNode
 
 from ament_index_python.packages import get_package_share_directory
 import os
+import subprocess
+import platform
 from collections import deque, Counter
 from ultralytics import YOLO
 import cv2
@@ -40,19 +42,25 @@ class FloorDetector(Node):
                                                        "floor_detector/elevator_display",
                                                        SensorDataQoS)
         
-
-        self.declare_parameter("model_display", f"{get_package_share_directory('floor_detector')}/weights/best_display.engine")
-        self.model_display = YOLO(self.get_parameter("model_display").get_parameter_value().string_value, task='detect')
-        self.get_logger().debug(f'Display Model path: {self.get_parameter("model_display").get_parameter_value().string_value}')
+        yolo_format = '.pt'
+        system_architecture = platform.processor() # Get system architecture 
+        if(system_architecture == 'aarch64'):
+            yolo_format = '.engine'            
+    
+        self.declare_parameter("model_display_path", f"{get_package_share_directory('floor_detector')}/weights/best_display")
+        model_display_path = self.get_parameter("model_display_path").get_parameter_value().string_value + yolo_format
+        self.model_display = YOLO(model_display_path, task='detect')
+        self.get_logger().debug(f'Display Model path: {model_display_path}')
 
         
-        self.declare_parameter("model_floor", f"{get_package_share_directory('floor_detector')}/weights/best_floor.engine")
-        self.model_floor = YOLO(self.get_parameter("model_floor").get_parameter_value().string_value, task='classify')
-        self.get_logger().debug(f'Floor Model path: {self.get_parameter("model_floor").get_parameter_value().string_value}')
-
-        self.get_logger().info('Floor detector node initialized')
+        self.declare_parameter("model_floor_path", f"{get_package_share_directory('floor_detector')}/weights/best_floor")
+        model_floor_path = self.get_parameter("model_floor_path").get_parameter_value().string_value + yolo_format
+        self.model_floor = YOLO(model_floor_path, task='classify')
+        self.get_logger().debug(f'Floor Model path: {model_floor_path}')
 
         self.last_detections = deque(maxlen=10)
+
+        self.get_logger().info('Floor detector node initialized')
 
     def on_off_node_callbalck(self, request, response):
         self.get_logger().info(f"Incoming request\nActivate: {request.activate}")
