@@ -41,7 +41,8 @@ setup(
         'console_scripts': [
             'checkpoints = navigation_pkg.checkpoints:main',
             'checkpointsServices = navigation_pkg.saveCheckpointsService:main',
-            'setInitialPos = navigation_pkg.setInitialPos:main'
+            'setInitialPos = navigation_pkg.setInitialPos:main',
+            'switchFloorService = navigation_pkg.switchFloorService:main'
         ],
     },
 )
