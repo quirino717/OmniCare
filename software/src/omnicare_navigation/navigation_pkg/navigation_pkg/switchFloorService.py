@@ -32,7 +32,7 @@ class SwitchFloorService(Node):
         self.clear_local = self.create_client(ClearEntireCostmap, '/local_costmap/clear_entirely_local_costmap')
         self.pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
 
-        self.srv = self.create_service(SwitchFloor, '/switch_floor', self.callback_test)
+        self.srv = self.create_service(SwitchFloor, '/omnicare/navigation/switch_floor', self.callback_test)
         self.get_logger().info('Serviço /switch_floor pronto!')
 
     def callback_test(self, request, response):
