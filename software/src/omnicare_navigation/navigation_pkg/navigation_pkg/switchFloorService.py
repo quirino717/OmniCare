@@ -1,44 +1,56 @@
 import rclpy
 from rclpy.node import Node
-from nav2_msgs.srv import LoadMap
+from nav2_msgs.srv import LoadMap, ClearEntireCostmap
 from std_srvs.srv import Empty
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from omnicare_msgs.srv import SwitchFloor  # <== substitua pelo nome real do seu pacote
 import math
 import time
 
+#ros2 service call /switch_floor omnicare_msgs/srv/SwitchFloor "{map_path: '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/
+#                                                                       omnicare_navigation/navigation_pkg/config/map/maps/quartoAndar.yaml', x: -3.593, y: 12.41, yaw: 0.0}"
+
+
+class MapLoader(Node):
+    def __init__(self):
+        super().__init__('map_loader')
+        self.cli = self.create_client(LoadMap, '/map_server/load_map')
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.req = LoadMap.Request()
+
+    def send_request(self, map_url):
+        self.req.map_url = map_url
+        self.future = self.cli.call_async(self.req)
+
 class SwitchFloorService(Node):
     def __init__(self):
         super().__init__('switch_floor_service')
 
         self.map_client = self.create_client(LoadMap, '/map_server/load_map')
-        self.clear_global = self.create_client(Empty, '/global_costmap/clear_entirely_nav2')
-        self.clear_local = self.create_client(Empty, '/local_costmap/clear_entirely_nav2')
+        self.clear_global = self.create_client(ClearEntireCostmap, '/global_costmap/clear_entirely_global_costmap')
+        self.clear_local = self.create_client(ClearEntireCostmap, '/local_costmap/clear_entirely_local_costmap')
         self.pose_pub = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
 
-        self.srv = self.create_service(SwitchFloor, '/switch_floor', self.callback)
+        self.srv = self.create_service(SwitchFloor, '/switch_floor', self.callback_test)
         self.get_logger().info('Serviço /switch_floor pronto!')
 
-    def callback(self, request, response):
-        # Espera serviços estarem prontos
-        if not self.map_client.wait_for_service(timeout_sec=5.0):
-            response.success = False
-            response.message = 'Serviço /map_server/load_map indisponível'
-            return response
-
-        self.get_logger().info(f'Trocando para o mapa: {request.map_path}')
-
-        # 1. Troca de mapa
-        map_req = LoadMap.Request()
-        map_req.map_url = request.map_path
-        future = self.map_client.call_async(map_req)
-        rclpy.spin_until_future_complete(self, future)
-        time.sleep(1.0)
-
+    def callback_test(self, request, response):
+        map_loader = MapLoader()
+        map_loader.send_request(request.map_path)
+        rclpy.spin_once(map_loader)
+        if map_loader.future.done():
+            try:
+                result = map_loader.future.result()
+                map_loader.get_logger().info(f"Map loaded: {result.result}")
+            except Exception as e:
+                map_loader.get_logger().info(f'Service call failed: {e}')
+                        
+        map_loader.destroy_node()
+        
         # 2. Limpa costmaps
-        self.clear_global.call_async(Empty.Request())
-        self.clear_local.call_async(Empty.Request())
-        time.sleep(0.5)
+        self.clear_global.call_async(ClearEntireCostmap.Request())
+        self.clear_local.call_async(ClearEntireCostmap.Request())
 
         # 3. Publica pose inicial
         msg = PoseWithCovarianceStamped()
@@ -56,9 +68,12 @@ class SwitchFloorService(Node):
 
         self.pose_pub.publish(msg)
 
-        self.get_logger().info(f'Mapa trocado e pose setada em x={request.x}, y={request.y}, yaw={request.yaw}')
+
+
+        self.get_logger().info(f'Mapa trocado e pose setada: ({request.x}, {request.y}, yaw={request.yaw})')
         response.success = True
-        response.message = 'Mapa trocado e pose inicial publicada com sucesso'
+        response.message = 'Mapa trocado e pose publicada com sucesso!'
+
         return response
 
 def main(args=None):

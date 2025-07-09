@@ -18,6 +18,7 @@ set(msg_files
 
   # SRV
   "srv/OnOffNode.srv"
+  "srv/SwitchFloor.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
