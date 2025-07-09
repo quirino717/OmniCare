@@ -41,6 +41,7 @@ setup(
         'console_scripts': [
             'checkpoints = navigation_pkg.checkpoints:main',
             'switchFloorService = navigation_pkg.switchFloorService:main',
+            'floorManagerNode = navigation_pkg.floorManagerNode:main',
         ],
     },
 )
