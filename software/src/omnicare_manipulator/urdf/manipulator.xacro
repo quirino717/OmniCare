@@ -1,13 +1,30 @@
 <?xml version="1.0" ?>
 <!-- Generated using onshape-to-robot -->
 <!-- Onshape https://cad.onshape.com/documents/8ad4b3e8e68952b2f8c65a07/w/3c1f775842712cbb585088e7/e/2e75ac6943677df920499bc9 -->
-<robot name="manipulator">
+<robot name="manipulator" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find omnicare_manipulator)/urdf/manipulator_gazebo_controller.xacro"/>
+  
+  <link name="world"/>
+  <joint name="world_to_base" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+
+  <link name="base_link"/>
+  <joint name="base_link_to_link_1" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="link_1_manip"/>
+  </joint>
+
   <!-- Link link_1_manip -->
   <link name="link_1_manip">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="1e-09"/>
-      <inertia ixx="1e-09" ixy="0" ixz="0" iyy="1e-09" iyz="0" izz="1e-09"/>
+      <mass value="10"/>
+      <inertia ixx="10" ixy="0" ixz="0" iyy="10" iyz="0" izz="10"/>
     </inertial>
     <!-- Part link_1_manip -->
     <visual>
@@ -30,8 +47,8 @@
   <link name="link_2_manip">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="1e-09"/>
-      <inertia ixx="1e-09" ixy="0" ixz="0" iyy="1e-09" iyz="0" izz="1e-09"/>
+      <mass value="0.001"/>
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
     </inertial>
     <!-- Part link_2_manip -->
     <visual>
@@ -54,8 +71,8 @@
   <link name="end_effector">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
-      <mass value="1e-09"/>
-      <inertia ixx="1e-09" ixy="0" ixz="0" iyy="1e-09" iyz="0" izz="1e-09"/>
+      <mass value="0.001"/>
+      <inertia ixx="0.5" ixy="0" ixz="0" iyy="0.5" iyz="0" izz="0.5"/>
     </inertial>
     <!-- Part end_effector -->
     <visual>
@@ -76,18 +93,20 @@
   </link>
   <!-- Joint from link_2_manip to end_effector -->
   <joint name="link2_to_ee" type="prismatic">
-    <origin xyz="0.035 -0.06 0.025" rpy="1.5708 4.67099e-46 1.5708"/>
+    <origin xyz="-0.040 -0.06 0.025" rpy="1.5708 0 1.5708"/>
     <parent link="link_2_manip"/>
     <child link="end_effector"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="10" lower="-1" upper="1"/>
+    <limit effort="1000.0" lower="0" upper="0.15" velocity="1"/>
+    <dynamics damping="0.0" friction="0.0"/>
   </joint>
   <!-- Joint from link_1_manip to link_2_manip -->
   <joint name="link1_to_link2" type="prismatic">
-    <origin xyz="5.55112e-17 -6.07847e-15 0.35625" rpy="0 2.96059e-16 0"/>
+    <origin xyz="0 0 0.11625" rpy="0 0 0"/>
     <parent link="link_1_manip"/>
     <child link="link_2_manip"/>
     <axis xyz="0 0 1"/>
-    <limit effort="10" velocity="10" lower="-1" upper="1"/>
+    <limit effort="1000.0" lower="0" upper="0.48" velocity="1"/> 
+    <dynamics damping="0.0" friction="0.0"/>
   </joint>
 </robot>
