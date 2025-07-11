@@ -1,11 +1,15 @@
 #include "pid.h"
 
+#include <math.h>
+
 //#include "tx_api.h"
 
-//TODO: Arrumar o last_time_call
+//TODO: Arrumar o last_time_call e usar
+//(tx_time_get() * 1000) / TX_TIMER_TICKS_PER_SECOND;
+
 void initPID(PID *pid, float kp, float ki, float kd,
-		     double max_output, double max_integral_error,
-			 uint32_t last_time_call)
+		     double max_output, double min_output, double max_integral_error,
+			 uint32_t last_time_call_ms)
 {
 	pid->set_point  = 0;
 	pid->input      = 0;
@@ -22,12 +26,14 @@ void initPID(PID *pid, float kp, float ki, float kd,
 	pid->last_time_call_ms = last_time_call_ms;
 
 	pid->max_output = max_output;
+	pid->min_output = min_output;
 }
 
-void update(PID *pid, double input, uint32_t atual_ms)
+double update(PID *pid, double input, uint32_t current_time_ms)
 {
-
-	uint32_t dt = atual_ms - pid->last_time_call_ms;
+	//TODO: Arrumar o atual_ms e usar
+	//(tx_time_get() * 1000) / TX_TIMER_TICKS_PER_SECOND;
+	uint32_t dt = current_time_ms - pid->last_time_call_ms;
 	double error = pid->set_point - input;
 
 	pid->integrated_error += error * dt;
@@ -36,22 +42,24 @@ void update(PID *pid, double input, uint32_t atual_ms)
 	if (pid->integrated_error >  pid->MAX_INTEGRAL_ERROR) pid->integrated_error =  pid->MAX_INTEGRAL_ERROR;
 	if (pid->integrated_error < -pid->MAX_INTEGRAL_ERROR) pid->integrated_error = -pid->MAX_INTEGRAL_ERROR;
 
-
-	derivate 	= (error - pid->last_error)/dt;
+	double error_derivate = (error - pid->last_error)/dt;
 
 	pid->last_error = error;
 
+	pid->output += pid->kp * error +
+				   pid->ki * pid->integrated_error +
+				   pid->kd * error_derivate;
 
-			motor_vel_pwm[i] += motors_data[i].PID[0] * error[i] +  motors_data[i].PID[1] * integral[i] + motors_data[i].PID[2] * derivate[i];
-			motors_data[i].PWM = motor_vel_pwm[i];
-
-			if(abs(motor_vel_pwm[i]) >= 100000)
-			{
-				motor_vel_pwm[i] = abs(motor_vel_pwm[i])/motor_vel_pwm[i] * -15;
-			}
-		}
-		update_velocity(motor_vel_pwm);
+	// TODO: arrumar essa gambiarra
+	if(fabs(pid->output) >= 100000)
+	{
+		pid->output = fabs(pid->output)/pid->output * -15;
 	}
-	last_time_ms = atual_ms;
-}
+
+	if(pid->output > pid->max_output ) pid->output = pid->max_output;
+	if(pid->output < pid->min_output ) pid->output = pid->min_output;
+
+	pid->last_time_call_ms = current_time_ms;
+
+	return pid->output;
 }
