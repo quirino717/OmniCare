@@ -10,6 +10,17 @@ from pathlib import Path
 from os import path
 
 
+# 5th floor
+#
+# checkpoint 1 > I heard posX: "1.7204484092596528", posY: -0.6794136066512567
+# checkpoint 2 > I heard posX: "6.248311608231612", posY: 0.12551270044226645
+
+
+
+# 4th floor
+#
+# checkpoint >  I heard posX: "-0.6128611658595348", posY: 7.135366317795398
+
 
 class Checkpoints(Node):
 

@@ -7,8 +7,18 @@ from omnicare_msgs.srv import SwitchFloor  # <== substitua pelo nome real do seu
 import math
 import time
 
+
+# ------------- Quinto Andar --------------------
+#
+# 
+# ros2 service call /omnicare/navigation/switch_floor omnicare_msgs/srv/SwitchFloor "{map_path: '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/
+#                                                       omnicare_navigation/navigation_pkg/config/map/maps/quintoAndarElevador.yaml', x: -3.593, y: 12.41, yaw: 0.0}"
+#
+
+# ------------- Quarto Andar --------------------
+# posX: -3.270550772983917", posY: 12.333608159888565 yaw: -0.5
 #ros2 service call /switch_floor omnicare_msgs/srv/SwitchFloor "{map_path: '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/
-#                                                                       omnicare_navigation/navigation_pkg/config/map/maps/quartoAndar.yaml', x: -3.593, y: 12.41, yaw: 0.0}"
+#                                                                       omnicare_navigation/navigation_pkg/config/map/maps/quartoAndar.yaml', x: -3.27, y: 12.33, yaw: -0.5}"
 
 
 class MapLoader(Node):
