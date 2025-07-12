@@ -10,6 +10,7 @@ SensorDataQoS = QoSProfile(
 
 from sensor_msgs.msg import Image
 from std_msgs.msg import String
+from omnicare_msgs.msg import FloorDetectorInfo
 from omnicare_msgs.srv import OnOffNode
 
 from ament_index_python.packages import get_package_share_directory
@@ -34,13 +35,15 @@ class FloorDetector(Node):
         self.bridge = CvBridge()
         self.get_logger().debug("CV Bridge initialized")
 
-        self.floor_publisher = self.create_publisher(String,
-                                                     "floor_detector/atual_floor",
-                                                     SensorDataQoS)
+        self.floor_det_info_publisher = self.create_publisher(FloorDetectorInfo,
+                                                              "floor_detector/info",
+                                                              SensorDataQoS)
         
         self.display_publisher = self.create_publisher(Image,
                                                        "floor_detector/elevator_display",
                                                        SensorDataQoS)
+        
+        self.main_callback_timer = self.create_timer(0.1, self.main_callback)
         
         yolo_format = '.pt'
         system_architecture = platform.processor() # Get system architecture 
@@ -58,6 +61,7 @@ class FloorDetector(Node):
         self.model_floor = YOLO(model_floor_path, task='classify')
         self.get_logger().debug(f'Floor Model path: {model_floor_path}')
 
+        self.time_last_display_detected_ms = int(self.get_clock().now().nanoseconds/1e6)
         self.last_detections = deque(maxlen=10)
 
         self.get_logger().info('Floor detector node initialized')
@@ -70,7 +74,7 @@ class FloorDetector(Node):
         if self.__nodeActivate:
             try:
                 self.cam_subscriber = self.create_subscription(Image,
-                                                               '/camera1/image_raw',
+                                                               'image_raw',
                                                                self.cam_subscriber_callback,
                                                                SensorDataQoS)
             except:
@@ -88,9 +92,7 @@ class FloorDetector(Node):
         self.image_raw = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.detect_floor(self.image_raw.copy())
 
-    def detect_floor(self, img):
-        floor_msg = String()
-        
+    def detect_floor(self, img):        
         display_results = self.model_display(self.image_raw, verbose=False)[0]
 
         # annotated_frame = display_results.plot()
@@ -99,6 +101,8 @@ class FloorDetector(Node):
 
         if len(display_results.boxes) == 0:
             return
+        
+        self.time_last_display_detected_ms = int(self.get_clock().now().nanoseconds/1e6)
         
         # finds first the elevator display
         display_img = self.find_display(img, display_results)
@@ -110,12 +114,14 @@ class FloorDetector(Node):
         floor_results = self.model_floor(display_img, verbose=False)[0]
 
         floor_filtered = self.filter_floor_detection(floor_results)
-        floor_msg.data = floor_filtered
-        self.floor_publisher.publish(floor_msg)
+        
+        # floor_msg.data = floor_filtered
+        # self.floor_publisher.publish(floor_msg)
     
     def find_display(self, img, results):    
         if len(results.boxes) == 0:
             return
+    
         _ = results.boxes[0].xyxy.tolist()[0] # Get xyxy position of BoundingBox
         int_xyxy = [int(float(x)) for x in _]
         return img[int_xyxy[1]:int_xyxy[3], int_xyxy[0]:int_xyxy[2]].copy() 
@@ -142,11 +148,35 @@ class FloorDetector(Node):
         return preprossed_img
 
     def filter_floor_detection(self, results):
-        floor = results.names[results.probs.top5[0]]        
-        self.last_detections.append(floor)
+        if results != None:
+            floor = results.names[results.probs.top5[0]]        
+            self.last_detections.append(floor)
+        
         last_detections_counter = Counter(self.last_detections)
         mode = last_detections_counter.most_common(1)[0][0] # Get the mode of last detections
         return mode
+
+    def main_callback(self):
+        floor_detector_info = FloorDetectorInfo()
+        time_now_ms = int(self.get_clock().now().nanoseconds/1e6)
+        # self.get_logger().info(f'mensagem rcebida tempo {self.time_last_display_detected_ms}')
+        # self.get_logger().info(f'mensagem rcebida temps {time_now_ms}')
+
+        if self.cam_subscriber != None:
+            floor_detector_info.detecting_floor = True
+
+            if(time_now_ms - self.time_last_display_detected_ms > 1000):
+                self.last_detections.clear()
+
+                floor_detector_info.lost_display = True
+                self.floor_det_info_publisher.publish(floor_detector_info)
+                return
+            floor_detector_info.floor_name = self.filter_floor_detection(None)
+
+        self.floor_det_info_publisher.publish(floor_detector_info)
+
+
+        
 
 def main(args=None):
     rclpy.init(args=args)
