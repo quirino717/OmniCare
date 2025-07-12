@@ -42,7 +42,7 @@ def generate_launch_description():
     )
 
     load_real_robot = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([get_package_share_directory('omnicare_bringup'),'/launch/load_sim_robot.launch.py']),
+        PythonLaunchDescriptionSource([get_package_share_directory('omnicare_bringup'),'/launch/load_real_robot.launch.py']),
         launch_arguments={
             'rvizconfig': [get_package_share_directory('navigation_pkg'), '/config/rviz/navigation.rviz'],
         }.items(),
