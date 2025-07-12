@@ -42,8 +42,6 @@ def generate_launch_description():
     use_sim_time_arg = DeclareLaunchArgument(name='use_sim_time', default_value='false',
                                             description='Flag to enable use_sim_time')
 
-    mapping_arg = DeclareLaunchArgument(name='mapping', default_value='false',
-                                            description='Flag to enable the mapping mode')
 
     
 
@@ -106,8 +104,7 @@ def generate_launch_description():
                     PathJoinSubstitution([
                         get_package_share_directory("navigation_pkg"),
                         "config/nav", "box_filter.yaml",
-                    ])],
-                condition=IfCondition(LaunchConfiguration('mapping'))
+                    ])]
         )
 
 
@@ -195,7 +192,6 @@ def generate_launch_description():
         model_arg,
         rviz_arg,
         use_sim_time_arg,
-        mapping_arg,
         teleop_joy_arg,
         robot_state_publisher_node, # publica o robô em si (URDF)
         rviz_node, #RVIZ2 para debug
