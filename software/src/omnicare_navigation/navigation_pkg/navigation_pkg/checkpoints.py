@@ -39,7 +39,7 @@ class Checkpoints(Node):
         self.srv_save = self.create_service(Trigger, '/omnicare/checkpoints/save_checkpoint', self.save_callback)
         self.srv_start = self.create_service(Trigger, '/omnicare/checkpoints/start', self.start_callback)
         self.srv_cancel = self.create_service(Trigger, '/omnicare/checkpoints/cancel', self.cancel_callback)
-        self.declare_parameter('checkpoints_file', '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/checkpoints/checkpoints.json')
+        self.declare_parameter('checkpoints_file', '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/checkpoints/quarto_andar_checkpoints.json')
 
 
     def listener_callback(self, msg):
@@ -61,14 +61,12 @@ class Checkpoints(Node):
     def save_callback(self, request, response):
 
         try:
-            # Goes up two folders
-            base_dir = Path(__file__).resolve().parent.parent 
-            filename = base_dir / 'config' / 'map' / 'checkpoints' / 'checkpoints.json'            
+            filename = self.get_parameter('checkpoints_file').get_parameter_value().string_value          
             dictObj = []
         
             # Check if file exists
             if path.isfile(filename) is False:
-                raise Exception("File not found")
+                raise Exception("File not found on this path: " + str(filename))
         
             # Read JSON file
             with open(filename) as fp:
