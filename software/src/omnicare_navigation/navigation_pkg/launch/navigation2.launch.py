@@ -15,8 +15,14 @@ def generate_launch_description():
     use_sim_time_arg = DeclareLaunchArgument(name='use_sim_time', default_value='false',
                                         description='Flag to enable simulation')
     
+    bringup_real_robot_arg = DeclareLaunchArgument(name='bringup_real_robot', default_value='false',
+                                        description='Flag to bringup the real robot too')
+    
     params_file_arg = DeclareLaunchArgument(name='params_file', default_value= get_package_share_directory('navigation_pkg') + '/config/nav/sim_nav2_params.yaml',
-                                        description='Flag to change the path')
+                                        description='Flag of the path of NAV2 params file')
+
+    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/quintoAndarElevador.yaml',
+                                        description='Flag of the path of map file')
     
 # -----------------------------------------------------
 
@@ -46,7 +52,7 @@ def generate_launch_description():
         launch_arguments={
             'rvizconfig': [get_package_share_directory('navigation_pkg'), '/config/rviz/navigation.rviz'],
         }.items(),
-        condition=UnlessCondition(LaunchConfiguration('use_sim_time'))
+        condition=IfCondition(LaunchConfiguration('bringup_real_robot'))
     )
 
 
@@ -60,10 +66,9 @@ def generate_launch_description():
             # 'namespace': LaunchConfiguration('namespace'),
             'use_namespace': 'False',
             'slam': 'False',
-            'map': [get_package_share_directory('navigation_pkg'),'/config/map/maps/quintoAndarElevador.yaml'],
+            'map': LaunchConfiguration('path_to_map'),
             'use_sim_time': LaunchConfiguration('use_sim_time'),
-            # 'params_file': [get_package_share_directory('nav2_bringup'),'/params/nav2_params.yaml'],
-            'params_file': [LaunchConfiguration('params_file')],
+            'params_file': LaunchConfiguration('params_file'),
             'autostart': 'True',
             'use_composition': 'True',
             'use_respawn': 'False'
@@ -95,7 +100,9 @@ def generate_launch_description():
 
     ld = LaunchDescription()
     ld.add_action(use_sim_time_arg)
+    ld.add_action(bringup_real_robot_arg)
     ld.add_action(params_file_arg)
+    ld.add_action(path_to_map_arg)
     ld.add_action(simulation)
     ld.add_action(load_sim_robot)
     ld.add_action(load_real_robot)
