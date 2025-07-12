@@ -12,6 +12,11 @@ import xacro
 def generate_launch_description():
     # Caminho do pacote
     package_path = get_package_share_directory('omnicare_manipulator')
+    
+    gazebo = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
+            )
 
     # Processar o Xacro
     xacro_file = os.path.join(package_path, 'urdf', 'manipulator.xacro')
@@ -43,7 +48,7 @@ def generate_launch_description():
 
     # Carregar position_controller
     load_position_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'position_controller'],
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'manip_joint_trajectory_controller'],
         output='screen'
     )
 
@@ -51,6 +56,7 @@ def generate_launch_description():
     return LaunchDescription([
         robot_state_publisher,
         spawn_entity,
+        gazebo,
 
         RegisterEventHandler(
             event_handler=OnProcessExit(

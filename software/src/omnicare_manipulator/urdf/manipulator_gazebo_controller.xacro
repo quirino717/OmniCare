@@ -7,12 +7,16 @@
 
     <joint name="link1_to_link2">
       <command_interface name="position"/>
+
       <state_interface name="position"/>
+      <state_interface name="velocity"/>
     </joint>
 
     <joint name="link2_to_ee">
       <command_interface name="position"/>
+      
       <state_interface name="position"/>
+      <state_interface name="velocity"/>
     </joint>
   </ros2_control>
 
