@@ -15,6 +15,8 @@ set(msg_files
   # MSG
   "msg/MotorsPWM.msg"
   "msg/MotorsData.msg"
+  "msg/FloorDetectorInfo.msg"
+  
 
   # SRV
   "srv/OnOffNode.srv"
