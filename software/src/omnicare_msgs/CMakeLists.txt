@@ -19,6 +19,10 @@ set(msg_files
   # SRV
   "srv/OnOffNode.srv"
   "srv/SwitchFloor.srv"
+  "srv/Checkpoints.srv"
+
+   # ACT
+   "action/EnterElevator.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
