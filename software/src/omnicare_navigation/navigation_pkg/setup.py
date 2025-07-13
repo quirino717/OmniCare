@@ -39,9 +39,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'checkpoints = navigation_pkg.checkpoints:main',
+            'checkpointsService = navigation_pkg.checkpointsService:main',
             'switchFloorService = navigation_pkg.switchFloorService:main',
             'floorManagerNode = navigation_pkg.floorManagerNode:main',
+            'actionTest = navigation_pkg.actionTest:main',
         ],
     },
 )

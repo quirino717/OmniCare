@@ -1,13 +1,16 @@
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
-
+from action_msgs.msg import GoalStatus
 from nav2_msgs.action import FollowWaypoints
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped
+from std_msgs.msg import Bool
 from std_srvs.srv import Trigger
+from omnicare_msgs.srv import Checkpoints
 import json
 from pathlib import Path
 from os import path
+from ament_index_python.packages import get_package_share_directory
 
 
 # 5th floor
@@ -22,7 +25,7 @@ from os import path
 # checkpoint >  I heard posX: "-0.6128611658595348", posY: 7.135366317795398
 
 
-class Checkpoints(Node):
+class checkpointsService(Node):
 
     def __init__(self):
         super().__init__('checkpoints')
@@ -35,12 +38,14 @@ class Checkpoints(Node):
             10)
         self.subscription  # prevent unused variable warning
 
-        self._action_client = ActionClient(self, FollowWaypoints, '/follow_waypoints')
-        self.srv_save = self.create_service(Trigger, '/omnicare/checkpoints/save_checkpoint', self.save_callback)
-        self.srv_start = self.create_service(Trigger, '/omnicare/checkpoints/start', self.start_callback)
-        self.srv_cancel = self.create_service(Trigger, '/omnicare/checkpoints/cancel', self.cancel_callback)
-        self.declare_parameter('checkpoints_file', '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/checkpoints/quarto_andar_checkpoints.json')
+        self.result_pub = self.create_publisher(Bool, '/checkpoint_done', 10)
 
+        self._action_client = ActionClient(self, FollowWaypoints, '/follow_waypoints')
+        self.srv_save = self.create_service(Checkpoints, '/omnicare/checkpoints/save_checkpoint', self.save_callback)
+        self.srv_start = self.create_service(Checkpoints, '/omnicare/checkpoints/start', self.start_callback)
+        self.srv_cancel = self.create_service(Trigger, '/omnicare/checkpoints/cancel', self.cancel_callback)
+
+        self.package_share_directory = get_package_share_directory('navigation_pkg')
 
     def listener_callback(self, msg):
         self.get_logger().info('I heard: "%s"' % msg.pose.pose.position)
@@ -110,7 +115,8 @@ class Checkpoints(Node):
     def start_callback(self, request, response):
 
         try:
-            checkpoints_file = self.get_parameter('checkpoints_file').get_parameter_value().string_value
+            checkpoints_file = f"{self.package_share_directory}/config/map/checkpoints/{request.floor}_checkpoints.json"
+            self.get_logger().info(f"Starting checkpoints from file: {checkpoints_file}")
 
             f = open(checkpoints_file)
             data = json.load(f)
@@ -128,19 +134,57 @@ class Checkpoints(Node):
                 p.pose.orientation.w = i['orientation']['w']
                 poses.append(p)
 
+
+            # Call the action server to follow waypoints
+            self.get_logger().info(f"Following waypoints: {len(poses)}")
             goal_msg = FollowWaypoints.Goal()
             goal_msg.poses = poses
             self._action_client.wait_for_server()
-            self.goal_handle = self._action_client.send_goal_async(goal_msg)
+
+            # Send the goal to the action server and create feedback callback
+            self.goal_handle = self._action_client.send_goal_async(goal_msg,feedback_callback=self.feedback_cb)
+            
+            # Set up callbacks for goal response
+            self.goal_handle.add_done_callback(self.goal_response_cb)
+
 
             response.success = True
             response.message = "Success"
             return response
+        
         except FileNotFoundError as e:
             self.get_logger().error (f"{e}")
             response.success = False
             response.message = f"{e}"
             return response
+        
+    
+    def feedback_cb(self, feedback_msg):
+        feedback = feedback_msg.feedback
+        self.get_logger().info(f"Present Checkpoint: {feedback.current_waypoint}")
+
+    def goal_response_cb(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().warn("Follow Waypoints rejected!")
+            return
+
+        self.get_logger().info("Follow Waypoints accepted!")
+
+        get_result_future = goal_handle.get_result_async()
+
+        get_result_future.add_done_callback(self.get_result_cb)
+
+
+    #     get_result_future.add_done_callback(self.action_result_cb)
+        
+    def get_result_cb(self, future):
+        result = future.result().result
+        if len(result.missed_waypoints) == 0:
+            self.get_logger().info("Follow Waypoints completed successfully!")
+            self.result_pub.publish(Bool(data=True))
+
+
 
     def cancel_callback(self, request, response):
         self.goal_handle.result().cancel_goal_async()
@@ -152,7 +196,7 @@ class Checkpoints(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    action_client = Checkpoints()
+    action_client = checkpointsService()
     rclpy.spin(action_client)
 
 

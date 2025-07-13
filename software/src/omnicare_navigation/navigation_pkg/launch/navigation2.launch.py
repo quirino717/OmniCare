@@ -21,7 +21,7 @@ def generate_launch_description():
     params_file_arg = DeclareLaunchArgument(name='params_file', default_value= get_package_share_directory('navigation_pkg') + '/config/nav/sim_nav2_params.yaml',
                                         description='Flag of the path of NAV2 params file')
 
-    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/quintoAndarElevador.yaml',
+    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/QuintoAndarFull.yaml',
                                         description='Flag of the path of map file')
     
 # -----------------------------------------------------
@@ -75,12 +75,12 @@ def generate_launch_description():
         }.items()
     )
 
-    delayed_nav2 = TimerAction(period=10.0, actions=[bringup_cmd])
+    delayed_nav2 = TimerAction(period=3.0, actions=[bringup_cmd])
 
     checkpoint = Node(
         package='navigation_pkg',
-        executable='checkpoints',
-        name='checkpoints',
+        executable='checkpointsService',
+        name='checkpointsService',
         parameters=[{
             'checkpoints_file': get_package_share_directory('navigation_pkg')+'/config/map/checkpoints/quinto_andar_checkpoints.json'
         }],
@@ -107,7 +107,7 @@ def generate_launch_description():
     ld.add_action(load_sim_robot)
     ld.add_action(load_real_robot)
     ld.add_action(delayed_nav2)
-    ld.add_action(checkpoint)
+    # ld.add_action(checkpoint)
     ld.add_action(switchFloor)
 
     return ld
