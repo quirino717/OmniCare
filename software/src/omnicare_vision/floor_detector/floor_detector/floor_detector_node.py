@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from ament_index_python.packages import get_package_share_path
 
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy
 SensorDataQoS = QoSProfile(
@@ -13,7 +14,8 @@ from std_msgs.msg import String
 from omnicare_msgs.msg import FloorDetectorInfo
 from omnicare_msgs.srv import OnOffNode
 
-from ament_index_python.packages import get_package_share_directory
+from .get_parameters import Parameters
+
 import os
 import subprocess
 import platform
@@ -25,6 +27,10 @@ from cv_bridge import CvBridge
 class FloorDetector(Node):
     def __init__(self):
         super().__init__('floor_detector')
+
+        self.params = Parameters(self)
+        weights_dir = get_package_share_path('floor_detector') / 'weights'
+
         self.srv = self.create_service(OnOffNode,
                                        "floor_detector/OnOffNode",
                                        self.on_off_node_callbalck)
@@ -43,26 +49,24 @@ class FloorDetector(Node):
                                                        "floor_detector/elevator_display",
                                                        SensorDataQoS)
         
-        self.main_callback_timer = self.create_timer(0.1, self.main_callback)
+        self.main_callback_timer = self.create_timer(self.params.main_callback_delay_s,
+                                                     self.main_callback)
         
         yolo_format = '.pt'
         system_architecture = platform.processor() # Get system architecture 
         if(system_architecture == 'aarch64'):
             yolo_format = '.engine'            
-    
-        self.declare_parameter("model_display_path", f"{get_package_share_directory('floor_detector')}/weights/best_display")
-        model_display_path = self.get_parameter("model_display_path").get_parameter_value().string_value + yolo_format
-        self.model_display = YOLO(model_display_path, task='detect')
-        self.get_logger().debug(f'Display Model path: {model_display_path}')
 
-        
-        self.declare_parameter("model_floor_path", f"{get_package_share_directory('floor_detector')}/weights/best_floor")
-        model_floor_path = self.get_parameter("model_floor_path").get_parameter_value().string_value + yolo_format
-        self.model_floor = YOLO(model_floor_path, task='classify')
-        self.get_logger().debug(f'Floor Model path: {model_floor_path}')
+        model_display_name = weights_dir / f'{self.params.model_display_name + yolo_format}'
+        self.model_display = YOLO(model_display_name, task='detect')
+        self.get_logger().debug(f'Display Model path: {model_display_name}')
+
+        model_floor_name = weights_dir / f'{self.params.model_floor_name + yolo_format}'
+        self.model_floor = YOLO(model_floor_name, task='classify')
+        self.get_logger().debug(f'Floor Model path: {model_floor_name}')
 
         self.time_last_display_detected_ms = int(self.get_clock().now().nanoseconds/1e6)
-        self.last_detections = deque(maxlen=10)
+        self.last_detections = deque(maxlen=self.params.filter_deque_size)
 
         self.get_logger().info('Floor detector node initialized')
 
@@ -74,9 +78,11 @@ class FloorDetector(Node):
         if self.__nodeActivate:
             try:
                 self.cam_subscriber = self.create_subscription(Image,
-                                                               'image_raw',
+                                                               '/camera1/image_raw',
                                                                self.cam_subscriber_callback,
                                                                SensorDataQoS)
+                
+                self.last_detections.clear()
             except:
                 response.result = False
                 self.destroy_subscription(self.cam_subscriber)
@@ -95,10 +101,6 @@ class FloorDetector(Node):
     def detect_floor(self, img):        
         display_results = self.model_display(self.image_raw, verbose=False)[0]
 
-        # annotated_frame = display_results.plot()
-        # cv2.imshow("YOLO11 Tracking", annotated_frame)
-        # cv2.waitKey(1)
-
         if len(display_results.boxes) == 0:
             return
         
@@ -113,10 +115,7 @@ class FloorDetector(Node):
         # Classification of the elevator display
         floor_results = self.model_floor(display_img, verbose=False)[0]
 
-        floor_filtered = self.filter_floor_detection(floor_results)
-        
-        # floor_msg.data = floor_filtered
-        # self.floor_publisher.publish(floor_msg)
+        self.filter_floor_detection(floor_results)
     
     def find_display(self, img, results):    
         if len(results.boxes) == 0:
@@ -152,15 +151,17 @@ class FloorDetector(Node):
             floor = results.names[results.probs.top5[0]]        
             self.last_detections.append(floor)
         
+        # Prevent wrong detection when deque isn't full
+        if len(self.last_detections) != self.params.filter_deque_size:
+            return None
+        
         last_detections_counter = Counter(self.last_detections)
         mode = last_detections_counter.most_common(1)[0][0] # Get the mode of last detections
         return mode
-
+    
     def main_callback(self):
         floor_detector_info = FloorDetectorInfo()
         time_now_ms = int(self.get_clock().now().nanoseconds/1e6)
-        # self.get_logger().info(f'mensagem rcebida tempo {self.time_last_display_detected_ms}')
-        # self.get_logger().info(f'mensagem rcebida temps {time_now_ms}')
 
         if self.cam_subscriber != None:
             floor_detector_info.detecting_floor = True
@@ -171,7 +172,13 @@ class FloorDetector(Node):
                 floor_detector_info.lost_display = True
                 self.floor_det_info_publisher.publish(floor_detector_info)
                 return
-            floor_detector_info.floor_name = self.filter_floor_detection(None)
+            
+            # floor_name == None means the result is not reliable
+            floor_name = self.filter_floor_detection(None)
+            if floor_name == None: 
+                floor_detector_info.lost_display = True
+            else:
+                floor_detector_info.floor_name = floor_name
 
         self.floor_det_info_publisher.publish(floor_detector_info)
 

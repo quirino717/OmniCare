@@ -1,0 +1,7 @@
+floor_detector:
+  ros__parameters:
+    model_display_name     : 'best_display'
+    model_floor_name       : 'best_floor'
+    filter_deque_size      : 10
+    lost_display_timeout_ms: 800
+    main_callback_delay_s  : 1.0
