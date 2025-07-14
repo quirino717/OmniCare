@@ -21,8 +21,11 @@ def generate_launch_description():
     params_file_arg = DeclareLaunchArgument(name='params_file', default_value= get_package_share_directory('navigation_pkg') + '/config/nav/sim_nav2_params.yaml',
                                         description='Flag of the path of NAV2 params file')
 
-    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/QuintoAndarFull.yaml',
+    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/simulation_map.yaml',
                                         description='Flag of the path of map file')
+    
+    log_level_arg = DeclareLaunchArgument(name='log_level', default_value='ERROR',
+                                        description='Flag of the log level for ROS2 nodes')
     
 # -----------------------------------------------------
 
@@ -71,7 +74,8 @@ def generate_launch_description():
             'params_file': LaunchConfiguration('params_file'),
             'autostart': 'True',
             'use_composition': 'True',
-            'use_respawn': 'False'
+            'use_respawn': 'False',
+            'log_level': LaunchConfiguration('log_level'),
         }.items()
     )
 
@@ -82,7 +86,7 @@ def generate_launch_description():
         executable='checkpointsService',
         name='checkpointsService',
         parameters=[{
-            'checkpoints_file': get_package_share_directory('navigation_pkg')+'/config/map/checkpoints/quinto_andar_checkpoints.json'
+            'checkpoints_file': get_package_share_directory('navigation_pkg')+'/config/map/checkpoints/simulation_checkpoints.json'
         }],
         # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
     )
@@ -95,6 +99,14 @@ def generate_launch_description():
         # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
     )
 
+    switchFloor = Node(
+        package='navigation_pkg',
+        executable='enterElevatorAction',
+        name='enterElevatorAction',
+        output='screen',
+        # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
+    )
+
 
 # -----------------------------------------------------
 
@@ -103,11 +115,12 @@ def generate_launch_description():
     ld.add_action(bringup_real_robot_arg)
     ld.add_action(params_file_arg)
     ld.add_action(path_to_map_arg)
+    ld.add_action(log_level_arg)
     ld.add_action(simulation)
     ld.add_action(load_sim_robot)
     ld.add_action(load_real_robot)
     ld.add_action(delayed_nav2)
-    # ld.add_action(checkpoint)
+    ld.add_action(checkpoint)
     ld.add_action(switchFloor)
 
     return ld

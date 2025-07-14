@@ -184,15 +184,6 @@
       </include>
     </model>
 
-    <model name="box_16">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>5 6 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
     <model name="box_17">
       <include>
         <name>box</name>
@@ -228,6 +219,69 @@
         <uri>model://box</uri>
       </include>
     </model>
+
+    <!-- Elevator -->
+
+    <!-- Left -->
+    <model name="left_elevator_wall_1">
+      <include>
+        <name>box</name>
+        <static>true</static>
+        <pose>4 2 0 0 0 0</pose>
+        <uri>model://box</uri>
+      </include>
+    </model>
+
+    <model name="left_elevator_wall_2">
+      <include>
+        <name>box</name>
+        <static>true</static>
+        <pose>5 2 0 0 0 0</pose>
+        <uri>model://box</uri>
+      </include>
+    </model>
+
+    <model name="left_elevator_wall_3">
+      <include>
+        <name>box</name>
+        <static>true</static>
+        <pose>6 2 0 0 0 0</pose>
+        <uri>model://box</uri>
+      </include>
+    </model>
+
+    <!-- Right -->
+     <model name="right_elevator_wall_1">
+      <include>
+        <name>box</name>
+        <static>true</static>
+        <pose>3 5 0 0 0 0</pose>
+        <uri>model://box</uri>
+      </include>
+    </model>
+
+    <model name="right_elevator_wall_2">
+      <include>
+        <name>box</name>
+        <static>true</static>
+        <pose>6 5 0 0 0 0</pose>
+        <uri>model://box</uri>
+      </include>
+    </model>
+
+    <!-- Behind -->
+
+    <model name="behind_elevator_wall_2">
+      <include>
+        <name>box</name>
+        <static>true</static>
+        <pose>3 3 0 0 0 0</pose>
+        <uri>model://box</uri>
+      </include>
+    </model>
+
+
+
 
   </world>
 </sdf>

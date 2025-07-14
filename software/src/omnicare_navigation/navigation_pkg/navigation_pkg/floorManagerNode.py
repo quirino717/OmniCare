@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32
-from omnicare_msgs.srv import SwitchFloor  # <== substitua pelo nome real do seu pacote
+from omnicare_msgs.srv import SwitchFloor  
 
 class FloorManager(Node):
     def __init__(self):
@@ -16,6 +16,9 @@ class FloorManager(Node):
         self.cli = self.create_client(SwitchFloor, '/omnicare/navigation/switch_floor')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Esperando serviço /switch_floor...')
+        
+        # Path of the map yaml files
+        self.declare_parameter('map_file', '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/checkpoints/quarto_andar_checkpoints.json')
 
         # Andares mapeados
         self.floor_map = {

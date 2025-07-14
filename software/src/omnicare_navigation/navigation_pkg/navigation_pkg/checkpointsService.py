@@ -12,17 +12,8 @@ from pathlib import Path
 from os import path
 from ament_index_python.packages import get_package_share_directory
 
-
-# 5th floor
-#
-# checkpoint 1 > I heard posX: "1.7204484092596528", posY: -0.6794136066512567
-# checkpoint 2 > I heard posX: "6.248311608231612", posY: 0.12551270044226645
-
-
-
-# 4th floor
-#
-# checkpoint >  I heard posX: "-0.6128611658595348", posY: 7.135366317795398
+# Example service call to save a checkpoint
+# ros2 service call /omnicare/checkpoints/save_checkpoint omnicare_msgs/srv/Checkpoints "{floor: 'simulation'}"
 
 
 class checkpointsService(Node):
@@ -66,7 +57,7 @@ class checkpointsService(Node):
     def save_callback(self, request, response):
 
         try:
-            filename = self.get_parameter('checkpoints_file').get_parameter_value().string_value          
+            filename = f"{self.package_share_directory}/config/map/checkpoints/{request.floor}_checkpoints.json"          
             dictObj = []
         
             # Check if file exists
