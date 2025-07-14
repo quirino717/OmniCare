@@ -99,7 +99,7 @@ def generate_launch_description():
         # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
     )
 
-    switchFloor = Node(
+    enterElevator = Node(
         package='navigation_pkg',
         executable='enterElevatorAction',
         name='enterElevatorAction',
@@ -122,5 +122,6 @@ def generate_launch_description():
     ld.add_action(delayed_nav2)
     ld.add_action(checkpoint)
     ld.add_action(switchFloor)
+    # ld.add_action(enterElevator)
 
     return ld

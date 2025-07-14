@@ -6,7 +6,6 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 
 from omnicare_msgs.action import EnterElevator  # Auto-gerado após build
-import time
 import math
 
 class EnterElevatorServer(Node):
@@ -91,20 +90,25 @@ class EnterElevatorServer(Node):
         feedback_msg = EnterElevator.Feedback()
         result = EnterElevator.Result()
 
+        rate = self.create_rate(10) #10 Hz
         entering_elevator = False
-        while rclpy.ok():
-            rclpy.spin_once(self)
-            # self.get_logger().info(
-            #     f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
-            # )
+        while rclpy.ok():            
+            self.get_logger().info('Iterando até entrar no elevador....')
+            self.get_logger().info(
+                f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
+            )
 
-
+            twist_msg = Twist()
             if goal_handle.is_cancel_requested:
                 goal_handle.canceled()
                 self.get_logger().info('Ação cancelada')
+
+                twist_msg.linear.x = 0.0
+                twist_msg.angular.z = 0.0
+                self.cmd_vel_publisher.publish(twist_msg)
                 return EnterElevator.Result(success=False, message='Cancelado')
             
-            twist_msg = Twist()
+            
             if self.is_aligned(self.range_left, self.range_right) or entering_elevator:
                 self.get_logger().info('Robô alinhado com o elevador, entrando...')
                 feedback_msg.robot_feedback = 'Robô já está alinhado com o elevador.'
@@ -143,7 +147,8 @@ class EnterElevatorServer(Node):
             self.cmd_vel_publisher.publish(twist_msg)
             goal_handle.publish_feedback(feedback_msg)
 
-            # await rate.sleep()
+            rate.sleep()
+            
 
         
 
@@ -151,7 +156,12 @@ class EnterElevatorServer(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = EnterElevatorServer()
-    rclpy.spin(node)
 
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(node)
+    executor.spin()
+
+    node.destroy_node()
+    rclpy.shutdown()
 if __name__ == '__main__':
     main()
