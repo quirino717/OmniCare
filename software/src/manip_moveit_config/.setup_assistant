@@ -1,0 +1,25 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: omnicare_manipulator
+    relative_path: urdf/manipulador.xacro.urdf
+  srdf:
+    relative_path: config/manipulator.srdf
+  package_settings:
+    author_name: Thiago M.
+    author_email: rpj134@gmail.com
+    generated_timestamp: 1752443353
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+    state:
+      - position
+      - velocity
