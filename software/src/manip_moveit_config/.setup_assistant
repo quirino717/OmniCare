@@ -1,13 +1,13 @@
 moveit_setup_assistant_config:
   urdf:
     package: omnicare_manipulator
-    relative_path: urdf/manipulador.xacro.urdf
+    relative_path: urdf/manipulator.urdf.xacro
   srdf:
     relative_path: config/manipulator.srdf
   package_settings:
     author_name: Thiago M.
-    author_email: rpj134@gmail.com
-    generated_timestamp: 1752443353
+    author_email: thiago.tmoura01@gmail.com
+    generated_timestamp: 1752544511
   control_xacro:
     command:
       - position

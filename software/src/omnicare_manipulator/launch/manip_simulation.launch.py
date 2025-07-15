@@ -18,8 +18,19 @@ def generate_launch_description():
                 get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
             )
 
+
+    rviz_config_path = os.path.join(package_path, 'config', 'display.rviz')
+
+    node_rviz = Node(
+        package='rviz2',
+        executable='rviz2', 
+        name='rviz2',
+        arguments=['-d', rviz_config_path],
+        output='screen'
+    )
+    
     # Processar o Xacro
-    xacro_file = os.path.join(package_path, 'urdf', 'manipulator.xacro')
+    xacro_file = os.path.join(package_path, 'urdf', 'manipulator.urdf.xacro')
     doc = xacro.parse(open(xacro_file))
     xacro.process_doc(doc)
     robot_description = {'robot_description': doc.toxml()}
@@ -54,6 +65,7 @@ def generate_launch_description():
 
     # Ordem de execução com eventos
     return LaunchDescription([
+        node_rviz,
         robot_state_publisher,
         spawn_entity,
         gazebo,

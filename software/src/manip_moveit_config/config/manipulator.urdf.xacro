@@ -3,12 +3,12 @@
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
 
     <!-- Import manipulator urdf file -->
-    <xacro:include filename="$(find omnicare_manipulator)/urdf/manipulator.xacro" />
+    <xacro:include filename="$(find omnicare_manipulator)/urdf/manipulator.urdf.xacro" />
 
     <!-- Import control_xacro -->
-    <xacro:include filename="manipulator.ros2_control.xacro" />
+    <!-- <xacro:include filename="manipulator.ros2_control.xacro" /> -->
 
 
-    <xacro:manipulator_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
+    <!-- <xacro:manipulator_ros2_control name="FakeSystem" initial_positions_file="$(arg initial_positions_file)"/> -->
 
 </robot>
