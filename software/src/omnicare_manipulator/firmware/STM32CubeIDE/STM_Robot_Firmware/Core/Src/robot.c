@@ -1,4 +1,4 @@
-#include "robot_data.h"
+#include "robot.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -7,6 +7,68 @@
 
 #include "tx_api.h"
 #include "pin_mapping.h"
+
+
+//void init_base_motors()
+//{
+//	unsigned long atual_ms = (tx_time_get() * 1000) / TX_TIMER_TICKS_PER_SECOND;
+//
+//	init_motor_robot_base(motors[0], kp=0.01, ki=0.0005, kd=0,
+//			              max_output=255, min_output=-255,
+//						  max_integral_error=10000,
+//						  last_time_call_ms=atual_ms);
+//
+//	init_motor_robot_base(motors[1], kp=0.01, ki=0.0005, kd=0,
+//				              max_output=255, min_output=-255,
+//							  max_integral_error=10000,
+//							  last_time_call_ms=atual_ms);
+//
+//	init_motor_robot_base(motors[2], kp=0.01, ki=0.0005, kd=0,
+//				              max_output=255, min_output=-255,
+//							  max_integral_error=10000,
+//							  last_time_call_ms=atual_ms);
+//
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 extern MotorData motors_data[3];
 

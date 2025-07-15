@@ -2,14 +2,10 @@
 
 #include <math.h>
 
-//#include "tx_api.h"
-
-//TODO: Arrumar o last_time_call e usar
-//(tx_time_get() * 1000) / TX_TIMER_TICKS_PER_SECOND;
+#include "tx_api.h"
 
 void initPID(PID *pid, float kp, float ki, float kd,
-		     double max_output, double min_output, double max_integral_error,
-			 uint32_t last_time_call_ms)
+		     double max_output, double min_output, double max_integral_error)
 {
 	pid->set_point  = 0;
 	pid->input      = 0;
@@ -23,16 +19,16 @@ void initPID(PID *pid, float kp, float ki, float kd,
 	pid->integrated_error = 0;
 	pid->MAX_INTEGRAL_ERROR = max_integral_error;
 
-	pid->last_time_call_ms = last_time_call_ms;
+	unsigned long atual_ms = (tx_time_get() * 1000) / TX_TIMER_TICKS_PER_SECOND;
+	pid->last_time_call_ms = atual_ms;
 
 	pid->max_output = max_output;
 	pid->min_output = min_output;
 }
 
-double update(PID *pid, double input, uint32_t current_time_ms)
+double update(PID *pid, double input)
 {
-	//TODO: Arrumar o atual_ms e usar
-	//(tx_time_get() * 1000) / TX_TIMER_TICKS_PER_SECOND;
+	unsigned long current_time_ms = (tx_time_get() * 1000) / TX_TIMER_TICKS_PER_SECOND;
 	uint32_t dt = current_time_ms - pid->last_time_call_ms;
 	double error = pid->set_point - input;
 
@@ -62,4 +58,11 @@ double update(PID *pid, double input, uint32_t current_time_ms)
 	pid->last_time_call_ms = current_time_ms;
 
 	return pid->output;
+}
+
+void setGains(PID *pid, float kp, float ki, float kd)
+{
+	pid->kp = kp;
+	pid->ki = ki;
+	pid->kd = kd;
 }

@@ -22,13 +22,11 @@ typedef struct{
 
 	double max_output;
 	double min_output;
-
-//	int first_time = 0;
 } PID;
 
 void initPID(PID *pid, float kp, float ki, float kd,
-		     double max_output, double min_output, double max_integral_error,
-			 uint32_t last_time_call_ms);
-double update(PID *pid, double input, uint32_t atual_ms);
+		     double max_output, double min_output, double max_integral_error);
+double update(PID *pid, double input);
+void setGains(PID *pid, float kp, float ki, float kd);
 
 #endif /* INC_PID_H_ */

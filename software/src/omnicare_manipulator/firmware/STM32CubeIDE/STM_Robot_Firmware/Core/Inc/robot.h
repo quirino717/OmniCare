@@ -4,7 +4,57 @@
 #include <stdint.h>
 
 #include "pin_mapping.h"
-#include "robot_data.h"
+#include "motor_base.h"
+
+//extern RobotBaseMotor motors[3];
+//
+//void init_base_motors();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 typedef struct
 {
