@@ -16,6 +16,22 @@ class EnterElevatorServer(Node):
 
         self.range_left, self.range_right, self.range_front = float('inf'), float('inf'), float('inf')
 
+        simulation = self.declare_parameter('simulation',False).get_parameter_value().bool_value
+        # simulation = self.get_parameter('simulation').get_parameter_value().bool_value
+
+        self.get_logger().info(f'Simulation mode: {simulation}')
+        if simulation:
+            self.angle_left  =  45
+            self.angle_right = -45
+            self.angle_front =   0
+        else:
+            self.angle_left  = -135
+            self.angle_right =  135
+            self.angle_front =   0
+
+
+
+
         # Subs
         self.laser_subscriber = self.create_subscription(
             LaserScan,
@@ -62,21 +78,40 @@ class EnterElevatorServer(Node):
         index = max(0, min(index, len(scan_msg.ranges) - 1))  # clamp
         return index
 
+    # def laser_callback(self, msg):
+    #     angle_left = math.radians(45)    # +45°
+    #     angle_right = math.radians(-45)  # -45°
+
+    #     idx_left = self.get_scan_index(angle_left, msg)
+    #     idx_right = self.get_scan_index(angle_right, msg)
+    #     idx_front = self.get_scan_index(0.0, msg)
+
+    #     self.range_left = msg.ranges[idx_left]
+    #     self.range_right = msg.ranges[idx_right]
+    #     self.range_front = msg.ranges[idx_front]
+
+        # self.get_logger().info(
+        #     f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
+        # )
+
     def laser_callback(self, msg):
-        angle_left = math.radians(45)    # +45°
-        angle_right = math.radians(-45)  # -45°
+        angle_left  = math.radians(self.angle_left)   
+        angle_right = math.radians(self.angle_right)    
+        angle_front = math.radians(self.angle_front)    
 
         idx_left = self.get_scan_index(angle_left, msg)
         idx_right = self.get_scan_index(angle_right, msg)
-        idx_front = self.get_scan_index(0.0, msg)
+        idx_front = self.get_scan_index(angle_front, msg)
 
         self.range_left = msg.ranges[idx_left]
         self.range_right = msg.ranges[idx_right]
         self.range_front = msg.ranges[idx_front]
 
-        # self.get_logger().info(
-        #     f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
-        # )
+        self.get_logger().info(
+            f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
+        )
+
+
 
     def goal_callback(self, goal_request):
         self.get_logger().info('Recebido pedido de entrar no elevador')

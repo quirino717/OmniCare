@@ -104,6 +104,9 @@ def generate_launch_description():
         executable='enterElevatorAction',
         name='enterElevatorAction',
         output='screen',
+        parameters=[{
+            'simulation': LaunchConfiguration('use_sim_time'),
+        }],
         # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
     )
 
