@@ -37,6 +37,7 @@ class checkpointsService(Node):
         self.srv_cancel = self.create_service(Trigger, '/omnicare/checkpoints/cancel', self.cancel_callback)
 
         self.package_share_directory = get_package_share_directory('navigation_pkg')
+        self.get_logger().info('Serviço /checkpoints pronto!')
 
     def listener_callback(self, msg):
         self.get_logger().info('I heard: "%s"' % msg.pose.pose.position)
@@ -104,6 +105,7 @@ class checkpointsService(Node):
             return response
 
     def start_callback(self, request, response):
+        self.get_logger().info(f"Received request to start checkpoints for floor: {request.floor}")
 
         try:
             checkpoints_file = f"{self.package_share_directory}/config/map/checkpoints/{request.floor}_checkpoints.json"

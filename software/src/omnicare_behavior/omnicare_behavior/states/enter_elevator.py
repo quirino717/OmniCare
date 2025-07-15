@@ -1,4 +1,4 @@
-from omnicare_msgs.action import EnterElevator  # Auto-gerado após build
+from omnicare_msgs.action import EnterElevator  
 
 def enter_elevator_behavior(node, action_client):
     """
@@ -22,20 +22,29 @@ def enter_elevator_behavior(node, action_client):
 
     def response_cb(future):
         try:
-            result = future.result
-            if result.success:
-                node.get_logger().info("Entrou no elevador com sucesso.")
-                node.current_state = 'WAIT_FOR_FLOOR'
-                
-            else:
-                node.get_logger().warn(f"Falha ao entrar no elevador: {result.message}")
-                node.current_state = 'ERROR'
+            goal_handle = future.result()
+            if not goal_handle.accepted:
+                node.get_logger().info('Goal rejected :(')
+                return
+
+            node.get_logger().info('Goal accepted :)')
+
+            get_result_future = goal_handle.get_result_async()
+            get_result_future.add_done_callback(get_result_callback)                
+            
         except Exception as e:
             node.get_logger().error(f"Erro na ação EnterElevator: {e}")
             node.current_state = 'ERROR'
 
+    def get_result_callback(future):
+        result = future.result().result
+        if result.success:
+            node.get_logger().info("Entrou no elevador com sucesso.")
+            node.current_state = 'WAIT_FOR_FLOOR'
+        else:
+            node.get_logger().warn(f"Falha ao entrar no elevador: {result.message}")
+            node.current_state = 'ERROR'
+
+
     future = action_client.send_goal_async(goal_msg,feedback_callback=feedback_cb)
     future.add_done_callback(response_cb)
-
-
-    

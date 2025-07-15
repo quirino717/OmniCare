@@ -5,7 +5,7 @@ floor_map = {
     1: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/quartoAndar.yaml', 'x': 10.0, 'y': 10.0, 'yaw': 0.0},
     2: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/quintoAndarElevador.yaml', 'x': 5.0, 'y':   5.0, 'yaw': 0.0},
     3: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/simulation_map.yaml', 'x': 0.0, 'y':  0.0, 'yaw': 0.0},
-    4: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/map.yaml', 'x': -3.0, 'y': 13.0, 'yaw': 0.0},
+    4: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/simulation_map.yaml', 'x': 5.18, 'y': 3.55, 'yaw': 3.14},
 }
 
 
@@ -31,6 +31,11 @@ def start_floor_navigation(floor: int, node, switch_floor_client):
     req.yaw = config['yaw']
 
     node.get_logger().info(f"Trocando para o andar {floor} com mapa {req.map_path}...")
+
+    if not switch_floor_client.wait_for_service(timeout_sec=5.0):
+        node.get_logger().error("Serviço de troca de mapa não está disponível.")
+        return
+
 
     future = switch_floor_client.call_async(req)
 
@@ -60,10 +65,16 @@ def start_checkpoints(floor: str, node, start_checkpoint_client):
     
     req = Checkpoints.Request()
     req.floor = floor
+    
 
     node.get_logger().info(f"Iniciando checkpoints para o andar {floor}...")
 
+    if not start_checkpoint_client.wait_for_service(timeout_sec=5.0):
+        node.get_logger().error("Serviço de Checkpoints não está disponível.")
+        return
+
     future = start_checkpoint_client.call_async(req)
+    
 
     def response_callback(future):
         try:

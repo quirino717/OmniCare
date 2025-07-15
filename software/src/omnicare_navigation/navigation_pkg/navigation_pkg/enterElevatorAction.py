@@ -41,8 +41,9 @@ class EnterElevatorServer(Node):
             goal_callback=self.goal_callback,
             cancel_callback=self.cancel_callback
         )
+        self.get_logger().info('Action /enter_elevator pronto!')
 
-    def is_aligned(self,range_left, range_right, tolerance=0.15):
+    def is_aligned(self,range_left, range_right, tolerance=0.1):
         """
         Verifica se o robô está alinhado com o elevador comparando simetria dos lados.
         """
@@ -50,6 +51,7 @@ class EnterElevatorServer(Node):
             return False  # Um dos lados está sem leitura, não confiável
 
         diff = abs(range_left - range_right)
+        self.get_logger().info(f"Verificando alinhamento: Esquerda: {range_left:.2f}, Direita: {range_right:.2f}, Diferença: {diff:.2f}")
         return diff <= tolerance
 
     def get_scan_index(self,angle_rad, scan_msg):

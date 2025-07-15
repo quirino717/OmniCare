@@ -79,7 +79,7 @@ def generate_launch_description():
         }.items()
     )
 
-    delayed_nav2 = TimerAction(period=3.0, actions=[bringup_cmd])
+    delayed_nav2 = TimerAction(period=5.0, actions=[bringup_cmd])
 
     checkpoint = Node(
         package='navigation_pkg',
@@ -122,6 +122,6 @@ def generate_launch_description():
     ld.add_action(delayed_nav2)
     ld.add_action(checkpoint)
     ld.add_action(switchFloor)
-    # ld.add_action(enterElevator)
+    ld.add_action(enterElevator)
 
     return ld

@@ -13,6 +13,8 @@ from omnicare_msgs.action import EnterElevator  # Auto-gerado após build
 from omnicare_behavior.states.floor_navigation import start_floor_navigation, start_checkpoints
 from omnicare_behavior.states.enter_elevator import enter_elevator_behavior
 
+import time
+
 
 class ElevatorBehaviorManager(Node):
 
@@ -42,6 +44,9 @@ class ElevatorBehaviorManager(Node):
             10
         )
 
+        # Sub to debug exit elevator
+        self.debug_sub = self.create_subscription(Bool, '/right_floor', self.debug_sub_cb, 10)       
+
         # Service Clients
         self.switch_floor = self.create_client(SwitchFloor, '/omnicare/navigation/switch_floor')
         self.startCheckpoint = self.create_client(Checkpoints, '/omnicare/checkpoints/start')
@@ -49,6 +54,8 @@ class ElevatorBehaviorManager(Node):
 
         # Action Clients                                                
         self.enter_elevator_client = ActionClient(self, EnterElevator, '/omnicare/elevator/enter_elevator')
+        self.exit_elevator_client  = ActionClient(self, EnterElevator, '/omnicare/elevator/exit_elevator')
+
 
         # self.enter_elevator_client = ActionClient(self, EnterElevator, '/enter_elevator')
         # self.activate_floor_client = self.create_client(Trigger, '/activate_floor_nav')
@@ -114,7 +121,7 @@ class ElevatorBehaviorManager(Node):
 
         enter_elevator_behavior(
             node=self,  # Pass the current node instance
-            action_client=self.enter_elevator_client  # Pass the EnterElevator action client instance
+            action_client=self.enter_elevator_client  # Pass the EnterElevator action client instance,
         )
 
         self.current_state = 'WAIT_ENTER_ELEVATOR'
@@ -125,6 +132,13 @@ class ElevatorBehaviorManager(Node):
         self.get_logger().info("Aguardando entrar no elevador...")
 
     #  --------------------------  Wait for floor State -----------------------------
+
+    def debug_sub_cb(self, msg):
+        if msg.data:
+            self.get_logger().info("Debug: Chegou no andar correto!")
+            self.current_state = 'EXIT_ELEVATOR'
+        else:
+            self.get_logger().info("Debug: Ainda não chegou no andar correto.")
 
 
     def wait_for_floor(self):
@@ -140,8 +154,20 @@ class ElevatorBehaviorManager(Node):
 
     def exit_elevator(self):
         self.get_logger().info("Executando saída do elevador (action)...")
+        start_floor_navigation(
+            floor=4,  # Which floor to start navigation
+            node=self, # Pass the current node instance
+            switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
+        )
+
+        start_checkpoints(
+            floor="simulation_exit",  # Which floor to start checkpoints
+            node=self, # Pass the current node instance
+            start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
+        )
+
         # Você pode fazer igual ao `enter_elevator`
-        self.current_state = 'FLOOR_NAVIGATION'
+        # self.current_state = 'FLOOR_NAVIGATION'
 
     #  ------------------------------  END -------------------------------
 
