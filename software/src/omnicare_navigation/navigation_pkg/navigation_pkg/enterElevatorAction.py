@@ -16,7 +16,7 @@ class EnterElevatorServer(Node):
 
         self.range_left, self.range_right, self.range_front = float('inf'), float('inf'), float('inf')
 
-        simulation = self.declare_parameter('simulation',False).get_parameter_value().bool_value
+        simulation = self.declare_parameter('simulation',True).get_parameter_value().bool_value
         # simulation = self.get_parameter('simulation').get_parameter_value().bool_value
 
         self.get_logger().info(f'Simulation mode: {simulation}')
@@ -24,10 +24,16 @@ class EnterElevatorServer(Node):
             self.angle_left  =  45
             self.angle_right = -45
             self.angle_front =   0
+
+            self.vel_left  =   -0.1
+            self.vel_right =    0.1
         else:
             self.angle_left  = -135
             self.angle_right =  135
-            self.angle_front =   0
+            self.angle_front =  180
+
+            self.vel_left  =   0.1
+            self.vel_right =  -0.1
 
 
 
@@ -59,7 +65,7 @@ class EnterElevatorServer(Node):
         )
         self.get_logger().info('Action /enter_elevator pronto!')
 
-    def is_aligned(self,range_left, range_right, tolerance=0.1):
+    def is_aligned(self,range_left, range_right, tolerance=0.2):
         """
         Verifica se o robô está alinhado com o elevador comparando simetria dos lados.
         """
@@ -77,39 +83,33 @@ class EnterElevatorServer(Node):
         index = int((angle_rad - scan_msg.angle_min) / scan_msg.angle_increment)
         index = max(0, min(index, len(scan_msg.ranges) - 1))  # clamp
         return index
+    
+    def get_average_range_in_sector(self, scan_msg, start_angle_deg, end_angle_deg):
+        start_angle = math.radians(start_angle_deg)
+        end_angle = math.radians(end_angle_deg)
 
-    # def laser_callback(self, msg):
-    #     angle_left = math.radians(45)    # +45°
-    #     angle_right = math.radians(-45)  # -45°
+        start_idx = self.get_scan_index(start_angle, scan_msg)
+        end_idx = self.get_scan_index(end_angle, scan_msg)
 
-    #     idx_left = self.get_scan_index(angle_left, msg)
-    #     idx_right = self.get_scan_index(angle_right, msg)
-    #     idx_front = self.get_scan_index(0.0, msg)
+        if start_idx > end_idx:
+            start_idx, end_idx = end_idx, start_idx  # garante ordem crescente
 
-    #     self.range_left = msg.ranges[idx_left]
-    #     self.range_right = msg.ranges[idx_right]
-    #     self.range_front = msg.ranges[idx_front]
+        ranges = scan_msg.ranges[start_idx:end_idx+1]
+        valid_ranges = [r for r in ranges if r > 0.05 and r < scan_msg.range_max]
 
+        if not valid_ranges:
+            return float('inf')  # não dá para confiar
+
+        return sum(valid_ranges) / len(valid_ranges)
+
+    def laser_callback(self, msg):
+        self.range_left = self.get_average_range_in_sector(msg, self.angle_left - 5, self.angle_left + 5)
+        self.range_right = self.get_average_range_in_sector(msg, self.angle_right - 5, self.angle_right + 5)
+        self.range_front = self.get_average_range_in_sector(msg, self.angle_front - 2, self.angle_front + 2)
         # self.get_logger().info(
         #     f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
         # )
-
-    def laser_callback(self, msg):
-        angle_left  = math.radians(self.angle_left)   
-        angle_right = math.radians(self.angle_right)    
-        angle_front = math.radians(self.angle_front)    
-
-        idx_left = self.get_scan_index(angle_left, msg)
-        idx_right = self.get_scan_index(angle_right, msg)
-        idx_front = self.get_scan_index(angle_front, msg)
-
-        self.range_left = msg.ranges[idx_left]
-        self.range_right = msg.ranges[idx_right]
-        self.range_front = msg.ranges[idx_front]
-
-        self.get_logger().info(
-            f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
-        )
+        self.is_aligned(self.range_left,self.range_right,0.1)
 
 
 
@@ -130,10 +130,10 @@ class EnterElevatorServer(Node):
         rate = self.create_rate(10) #10 Hz
         entering_elevator = False
         while rclpy.ok():            
-            self.get_logger().info('Iterando até entrar no elevador....')
-            self.get_logger().info(
-                f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
-            )
+            # self.get_logger().info('Iterando até entrar no elevador....')
+            # self.get_logger().info(
+            #     f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
+            # )
 
             twist_msg = Twist()
             if goal_handle.is_cancel_requested:
@@ -147,15 +147,15 @@ class EnterElevatorServer(Node):
             
             
             if self.is_aligned(self.range_left, self.range_right) or entering_elevator:
-                self.get_logger().info('Robô alinhado com o elevador, entrando...')
+                # self.get_logger().info('Robô alinhado com o elevador, entrando...')
                 feedback_msg.robot_feedback = 'Robô já está alinhado com o elevador.'
                 goal_handle.publish_feedback(feedback_msg)
 
                 entering_elevator = True
                 
                 # Robô já está alinhado, avança para entrar no elevador
-                if self.range_front > 1.88:
-                    twist_msg.linear.x = 0.2  
+                if self.range_front > 0.5:
+                    twist_msg.linear.x = 10.0  
                     self.cmd_vel_publisher.publish(twist_msg)
                 
                 # Entrou no elevador
@@ -171,12 +171,14 @@ class EnterElevatorServer(Node):
     
 
             elif not entering_elevator and not self.is_aligned(self.range_left, self.range_right):
-                self.get_logger().info('Robô não está alinhado com o elevador, ajustando...')
+                # self.get_logger().info('Robô não está alinhado com o elevador, ajustando...')
                 # Ajuste de alinhamento
                 if self.range_left < self.range_right:
-                    twist_msg.angular.z = -0.5
+                    self.get_logger().info('ESQUERDA...')
+                    twist_msg.angular.z = self.vel_left
                 else:
-                    twist_msg.angular.z = 0.5
+                    self.get_logger().info('DIREITA...')
+                    twist_msg.angular.z = self.vel_right
                     
                 # self.cmd_vel_publisher.publish(twist_msg)
                 feedback_msg.robot_feedback = 'Ajustando alinhamento...'

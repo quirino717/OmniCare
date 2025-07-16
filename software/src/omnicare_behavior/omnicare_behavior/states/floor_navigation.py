@@ -3,7 +3,7 @@ from omnicare_msgs.srv import SwitchFloor, Checkpoints
 # Andares mapeados
 floor_map = {
     1: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/quartoAndar.yaml', 'x': 10.0, 'y': 10.0, 'yaw': 0.0},
-    2: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/quintoAndarElevador.yaml', 'x': 5.0, 'y':   5.0, 'yaw': 0.0},
+    2: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/quintoAndarElevador.yaml', 'x': 1.72, 'y':   -0.68, 'yaw': 0.0},
     3: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/simulation_map.yaml', 'x': 0.0, 'y':  0.0, 'yaw': 0.0},
     4: {'map_path': '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_navigation/navigation_pkg/config/map/maps/simulation_map.yaml', 'x': 5.18, 'y': 3.55, 'yaw': 3.14},
 }
