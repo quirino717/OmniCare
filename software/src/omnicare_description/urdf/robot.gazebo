@@ -46,7 +46,7 @@
   <gazebo reference="lidar_link">
     <sensor type="ray" name="head_hokuyo_sensor">
       <visualize> false </visualize>
-      <updateRate>20</updateRate>
+      <updateRate>10</updateRate>
       <ray>
         <scan>
           <horizontal>
@@ -122,53 +122,6 @@
       <joint_name>wheel1_speed</joint_name>
       <joint_name>wheel2_speed</joint_name>
       <joint_name>wheel3_speed</joint_name>
-
-      <!-- Rollers -->
-      <!-- 1 -->
-      <joint_name>w1_internal_1_passive</joint_name>
-      <joint_name>w1_internal_2_passive</joint_name>
-      <joint_name>w1_internal_3_passive</joint_name>
-      <joint_name>w1_internal_4_passive</joint_name>
-      <joint_name>w1_internal_5_passive</joint_name>
-      <joint_name>w1_internal_6_passive</joint_name>
-
-      <joint_name>w1_external_1_passive</joint_name>
-      <joint_name>w1_external_2_passive</joint_name>
-      <joint_name>w1_external_3_passive</joint_name>
-      <joint_name>w1_external_4_passive</joint_name>
-      <joint_name>w1_external_5_passive</joint_name>
-      <joint_name>w1_external_6_passive</joint_name>
-
-      <!-- 2 -->
-      <joint_name>w2_internal_1_passive</joint_name>
-      <joint_name>w2_internal_2_passive</joint_name>
-      <joint_name>w2_internal_3_passive</joint_name>
-      <joint_name>w2_internal_4_passive</joint_name>
-      <joint_name>w2_internal_5_passive</joint_name>
-      <joint_name>w2_internal_6_passive</joint_name>
-
-      <joint_name>w2_external_1_passive</joint_name>
-      <joint_name>w2_external_2_passive</joint_name>
-      <joint_name>w2_external_3_passive</joint_name>
-      <joint_name>w2_external_4_passive</joint_name>
-      <joint_name>w2_external_5_passive</joint_name>
-      <joint_name>w2_external_6_passive</joint_name>
-
-      <!-- 3 -->
-      <joint_name>w3_internal_1_passive</joint_name>
-      <joint_name>w3_internal_2_passive</joint_name>
-      <joint_name>w3_internal_3_passive</joint_name>
-      <joint_name>w3_internal_4_passive</joint_name>
-      <joint_name>w3_internal_5_passive</joint_name>
-      <joint_name>w3_internal_6_passive</joint_name>
-
-      <joint_name>w3_external_1_passive</joint_name>
-      <joint_name>w3_external_2_passive</joint_name>
-      <joint_name>w3_external_3_passive</joint_name>
-      <joint_name>w3_external_4_passive</joint_name>
-      <joint_name>w3_external_5_passive</joint_name>
-      <joint_name>w3_external_6_passive</joint_name>
-
     </plugin>
   </gazebo>
 

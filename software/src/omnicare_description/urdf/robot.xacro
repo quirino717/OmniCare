@@ -14,12 +14,11 @@
             <child link="lidar_link" />
             <origin rpy="0.0 0 3.14" xyz="0 0 0" />
         </joint>
-         
+
         <xacro:include filename="$(find omnicare_description)/urdf/ros2_control.xacro" />
     </xacro:unless>
 
-    <xacro:include filename="$(find omnicare_description)/urdf/camera.xacro"/>
-
+    <xacro:include filename="$(find omnicare_description)/urdf/camera.xacro" />
 
 
     <joint name="base_footprint_to_base_link" type="fixed">
@@ -327,14 +326,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_external_1_passive" type="continuous">
+    <joint name="w1_external_1_passive" type="fixed">
         <origin xyz="0.01750000000000022024 -0.050000000000000002776 -0.046999999999999930722"
             rpy="-3.141592653589793116 -1.570796326794896558 0" />
         <parent link="roda" />
         <child link="rolete" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_2">
@@ -367,14 +368,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_external_2_passive" type="continuous">
+    <joint name="w1_external_2_passive" type="fixed">
         <origin xyz="0.052051270189221954254 -0.009844555433772231301 -0.047000000000000041744"
             rpy="1.570796326794896558 4.1633363423452281929e-17 2.6179938779914921909" />
         <parent link="roda" />
         <child link="rolete_2" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_3">
@@ -407,14 +410,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_external_3_passive" type="continuous">
+    <joint name="w1_external_3_passive" type="fixed">
         <origin xyz="0.052051270189221968132 0.0098445554337722868121 -0.047000000000000041744"
             rpy="-1.570796326794896558 4.163336342345265787e-17 -2.6179938779914921909" />
         <parent link="roda" />
         <child link="rolete_3" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_4">
@@ -446,14 +451,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_external_4_passive" type="continuous">
+    <joint name="w1_external_4_passive" type="fixed">
         <origin xyz="0.01750000000000022024 0.050000000000000002776 -0.046999999999999930722"
             rpy="-3.141592653589793116 -1.570796326794896558 0" />
         <parent link="roda" />
         <child link="rolete_4" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_5">
@@ -488,14 +495,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_external_5_passive" type="continuous">
+    <joint name="w1_external_5_passive" type="fixed">
         <origin xyz="-0.034551270189221897078 0.040155444566227743719 -0.046999999999999930722"
             rpy="1.570796326794896558 9.7144514654709209156e-17 2.6179938779914921909" />
         <parent link="roda" />
         <child link="rolete_5" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_6">
@@ -528,14 +537,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_external_6_passive" type="continuous">
+    <joint name="w1_external_6_passive" type="fixed">
         <origin xyz="-0.034551270189221897078 -0.040155444566227743719 -0.046999999999999986233"
             rpy="-1.570796326794896558 4.163336342345242984e-17 -2.6179938779914930791" />
         <parent link="roda" />
         <child link="rolete_6" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_7">
@@ -570,14 +581,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_internal_1_passive" type="continuous">
+    <joint name="w1_internal_1_passive" type="fixed">
         <origin xyz="0.0098445554337722885468 -0.052051270189221947315 -0.02899999999999994249"
             rpy="0.52359877559829937077 -1.570796326794896558 0" />
         <parent link="roda" />
         <child link="rolete_7" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_8">
@@ -611,14 +624,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_internal_2_passive" type="continuous">
+    <joint name="w1_internal_2_passive" type="fixed">
         <origin xyz="0.050000000000000016653 -0.017500000000000019013 -0.028999999999999970246"
             rpy="-1.570796326794896558 1.035468818874435832e-17 3.141592653589793116" />
         <parent link="roda" />
         <child link="rolete_8" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_9">
@@ -651,14 +666,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_internal_3_passive" type="continuous">
+    <joint name="w1_internal_3_passive" type="fixed">
         <origin xyz="0.0098445554337722469135 0.052051270189221926499 -0.028999999999999998002"
             rpy="-0.5235987755982990377 -1.570796326794896558 0" />
         <parent link="roda" />
         <child link="rolete_9" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_10">
@@ -693,14 +710,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_internal_4_passive" type="continuous">
+    <joint name="w1_internal_4_passive" type="fixed">
         <origin xyz="-0.0098445554337722486482 0.052051270189221954254 -0.028999999999999970246"
             rpy="-2.6179938779914890823 -1.570796326794896558 0" />
         <parent link="roda" />
         <child link="rolete_10" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_11">
@@ -733,14 +752,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_internal_5_passive" type="continuous">
+    <joint name="w1_internal_5_passive" type="fixed">
         <origin xyz="-0.049999999999999988898 -0.017500000000000001665 -0.028999999999999970246"
             rpy="-1.570796326794896558 6.5865839420001391858e-17 -3.1415926535897926719" />
         <parent link="roda" />
         <child link="rolete_11" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_12">
@@ -775,14 +796,16 @@
         </inertial>
     </link>
 
-    <joint name="w1_internal_6_passive" type="continuous">
+    <joint name="w1_internal_6_passive" type="fixed">
         <origin xyz="-0.0098445554337722746691 -0.052051270189221933438 -0.028999999999999998002"
             rpy="2.6179938779914944114 -1.570796326794896558 0" />
         <parent link="roda" />
         <child link="rolete_12" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <joint name="wheel1_speed" type="continuous">
@@ -790,9 +813,11 @@
             rpy="-1.570796326794896558 -0 -1.0471975511965978534" />
         <parent link="base" />
         <child link="roda" />
-        <axis xyz="0 0 1" />
-        <limit effort="1" velocity="20" />
-        <joint_properties friction="0.1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="0.1" friction="0.2" /> <!-- ISSO FUNCIONA -->
+        </axis>
+        <limit effort="1" velocity="200" />
+
     </joint>
 
     <link name="roda_2">
@@ -853,14 +878,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_external_1_passive" type="continuous">
+    <joint name="w2_external_1_passive" type="fixed">
         <origin xyz="0.017500000000000001665 -0.050000000000000002776 -0.046999999999999986233"
             rpy="-3.141592653589793116 -1.570796326794896558 0" />
         <parent link="roda_2" />
         <child link="rolete_13" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_14">
@@ -895,14 +922,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_external_2_passive" type="continuous">
+    <joint name="w2_external_2_passive" type="fixed">
         <origin xyz="0.052051270189221961193 -0.0098445554337722798732 -0.046999999999999986233"
             rpy="-1.570796326794896558 8.3266726846886740532e-17 -0.52359877559829937077" />
         <parent link="roda_2" />
         <child link="rolete_14" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_15">
@@ -935,14 +964,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_external_3_passive" type="continuous">
+    <joint name="w2_external_3_passive" type="fixed">
         <origin xyz="0.0345512701892218832 0.04015544456622767433 -0.046999999999999986233"
             rpy="-1.570796326794896558 -1.9428902930940232062e-16 0.5235987755982980385" />
         <parent link="roda_2" />
         <child link="rolete_15" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_16">
@@ -974,14 +1005,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_external_4_passive" type="continuous">
+    <joint name="w2_external_4_passive" type="fixed">
         <origin xyz="0.017500000000000001665 0.050000000000000002776 -0.046999999999999986233"
             rpy="-3.141592653589793116 -1.570796326794896558 0" />
         <parent link="roda_2" />
         <child link="rolete_16" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_17">
@@ -1014,14 +1047,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_external_5_passive" type="continuous">
+    <joint name="w2_external_5_passive" type="fixed">
         <origin xyz="-0.034551270189221931772 0.040155444566227688208 -0.047000000000000041744"
             rpy="-1.570796326794896558 2.7755575615628950488e-17 -0.5235987755982990377" />
         <parent link="roda_2" />
         <child link="rolete_17" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_18">
@@ -1054,14 +1089,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_external_6_passive" type="continuous">
+    <joint name="w2_external_6_passive" type="fixed">
         <origin xyz="-0.052051270189221968132 -0.0098445554337723215066 -0.046999999999999986233"
             rpy="-1.570796326794896558 -2.4980018054065997508e-16 0.52359877559829848259" />
         <parent link="roda_2" />
         <child link="rolete_18" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_19">
@@ -1094,14 +1131,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_internal_1_passive" type="continuous">
+    <joint name="w2_internal_1_passive" type="fixed">
         <origin xyz="0.0098445554337722798732 -0.052051270189221954254 -0.028999999999999998002"
             rpy="0.52359877559829937077 -1.570796326794896558 0" />
         <parent link="roda_2" />
         <child link="rolete_19" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_20">
@@ -1135,14 +1174,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_internal_2_passive" type="continuous">
+    <joint name="w2_internal_2_passive" type="fixed">
         <origin xyz="0.050000000000000030531 0.017500000000000015543 -0.029000000000000025757"
             rpy="-1.570796326794896558 1.0888646801245511308e-17 0" />
         <parent link="roda_2" />
         <child link="rolete_20" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_21">
@@ -1175,14 +1216,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_internal_3_passive" type="continuous">
+    <joint name="w2_internal_3_passive" type="fixed">
         <origin xyz="0.0098445554337723163024 0.052051270189221954254 -0.028999999999999970246"
             rpy="-0.52359877559829870464 -1.570796326794896558 0" />
         <parent link="roda_2" />
         <child link="rolete_21" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_22">
@@ -1215,14 +1258,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_internal_4_passive" type="continuous">
+    <joint name="w2_internal_4_passive" type="fixed">
         <origin xyz="-0.040155444566227702086 0.034551270189221924833 -0.028999999999999998002"
             rpy="0.52359877559829870464 -1.570796326794896558 0" />
         <parent link="roda_2" />
         <child link="rolete_22" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_23">
@@ -1256,14 +1301,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_internal_5_passive" type="continuous">
+    <joint name="w2_internal_5_passive" type="fixed">
         <origin xyz="-0.04999999999999997502 0.017500000000000029421 -0.029000000000000025757"
             rpy="-1.570796326794896558 1.0888646801245511308e-17 0" />
         <parent link="roda_2" />
         <child link="rolete_23" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_24">
@@ -1298,14 +1345,16 @@
         </inertial>
     </link>
 
-    <joint name="w2_internal_6_passive" type="continuous">
+    <joint name="w2_internal_6_passive" type="fixed">
         <origin xyz="-0.040155444566227702086 -0.034551270189221897078 -0.028999999999999998002"
             rpy="-0.52359877559829959282 -1.570796326794896558 0" />
         <parent link="roda_2" />
         <child link="rolete_24" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <joint name="wheel3_speed" type="continuous">
@@ -1313,9 +1362,11 @@
             rpy="-1.570796326794896558 -0 1.0471975511965980754" />
         <parent link="base" />
         <child link="roda_2" />
-        <axis xyz="0 0 1" />
-        <limit effort="1" velocity="20" />
-        <joint_properties friction="0.1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="0.1" friction="0.2" /> <!-- ISSO FUNCIONA -->
+        </axis>
+        <limit effort="1" velocity="200" />
+
     </joint>
 
     <link name="roda_3">
@@ -1376,14 +1427,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_external_1_passive" type="continuous">
+    <joint name="w3_external_1_passive" type="fixed">
         <origin xyz="0.017500000000000008604 0.050000000000000002776 -0.046999999999999986233"
             rpy="-0 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_25" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_26">
@@ -1415,14 +1468,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_external_2_passive" type="continuous">
+    <joint name="w3_external_2_passive" type="fixed">
         <origin xyz="-0.052051270189221926499 0.0098445554337723215066 -0.046999999999999986233"
             rpy="2.0943951023931952626 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_26" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_27">
@@ -1455,14 +1510,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_external_3_passive" type="continuous">
+    <joint name="w3_external_3_passive" type="fixed">
         <origin xyz="-0.034551270189221917895 -0.040155444566227688208 -0.046999999999999986233"
             rpy="1.0471975511965985195 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_27" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_28">
@@ -1494,14 +1551,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_external_4_passive" type="continuous">
+    <joint name="w3_external_4_passive" type="fixed">
         <origin xyz="0.017500000000000015543 -0.050000000000000002776 -0.046999999999999986233"
             rpy="-0 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_28" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_29">
@@ -1534,14 +1593,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_external_5_passive" type="continuous">
+    <joint name="w3_external_5_passive" type="fixed">
         <origin xyz="0.034551270189221987283 -0.040155444566227646574 -0.047000000000000041744"
             rpy="2.0943951023931952626 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_29" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_30">
@@ -1573,14 +1634,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_external_6_passive" type="continuous">
+    <joint name="w3_external_6_passive" type="fixed">
         <origin xyz="0.052051270189221940377 0.0098445554337723562011 -0.047000000000000041744"
             rpy="1.0471975511965971872 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_30" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_31">
@@ -1613,14 +1676,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_internal_1_passive" type="continuous">
+    <joint name="w3_internal_1_passive" type="fixed">
         <origin xyz="-0.04015544456622767433 0.034551270189221938711 -0.028999999999999998002"
             rpy="2.6179938779914944114 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_31" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_32">
@@ -1652,14 +1717,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_internal_2_passive" type="continuous">
+    <joint name="w3_internal_2_passive" type="fixed">
         <origin xyz="-0.049999999999999995837 -0.017500000000000001665 -0.028999999999999998002"
             rpy="1.5707963267948961139 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_32" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_33">
@@ -1692,14 +1759,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_internal_3_passive" type="continuous">
+    <joint name="w3_internal_3_passive" type="fixed">
         <origin xyz="-0.040155444566227702086 -0.0345512701892218832 -0.029000000000000025757"
             rpy="-2.6179938779914930791 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_33" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_34">
@@ -1732,14 +1801,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_internal_4_passive" type="continuous">
+    <joint name="w3_internal_4_passive" type="fixed">
         <origin xyz="0.0098445554337722677302 -0.052051270189221940377 -0.028999999999999998002"
             rpy="2.6179938779914939673 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_34" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_35">
@@ -1771,14 +1842,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_internal_5_passive" type="continuous">
+    <joint name="w3_internal_5_passive" type="fixed">
         <origin xyz="0.050000000000000009714 -0.017500000000000015543 -0.029000000000000025757"
             rpy="1.570796326794896558 -0 0" />
         <parent link="roda_3" />
         <child link="rolete_35" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <link name="rolete_36">
@@ -1813,14 +1886,16 @@
         </inertial>
     </link>
 
-    <joint name="w3_internal_6_passive" type="continuous">
+    <joint name="w3_internal_6_passive" type="fixed">
         <origin xyz="0.0098445554337723284455 0.052051270189221940377 -0.028999999999999998002"
             rpy="-2.6179938779914944114 1.570796326794896558 0" />
         <parent link="roda_3" />
         <child link="rolete_36" />
-        <axis xyz="0 0 1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="1.0" friction="1.0" /> <!-- ISSO FUNCIONA -->
+        </axis>
         <limit effort="1" velocity="20" />
-        <joint_properties friction="0.0" />
+
     </joint>
 
     <joint name="wheel2_speed" type="continuous">
@@ -1828,9 +1903,11 @@
             rpy="1.570796326794896558 -0 2.1057260917706475226e-16" />
         <parent link="base" />
         <child link="roda_3" />
-        <axis xyz="0 0 1" />
-        <limit effort="1" velocity="20" />
-        <joint_properties friction="0.1" />
+        <axis xyz="0 0 1">
+            <dynamics damping="0.1" friction="0.2" /> <!-- ISSO FUNCIONA -->
+        </axis>
+        <limit effort="1" velocity="200" />
+
     </joint>
 
 
