@@ -2,11 +2,11 @@
 <sdf version="1.6">
   <world name="simple_room_with_fixed_boxes">
 
-    <gui fullscreen='0'>
+    <!-- <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose>0 0 40 0 1.57 0</pose>
       </camera>
-    </gui>
+    </gui> -->
 
     <include>
       <uri>model://ground_plane</uri>
@@ -21,7 +21,7 @@
       <pose>0 0 0 0 -0 0</pose>
     </include>
 
-    <population name="square_population">
+    <!-- <population name="square_population">
       <pose>-0.5 -0.5 0 0 0 0</pose>
       <model name="chess">
         <include>
@@ -36,20 +36,20 @@
           <pose>1 1 0 0 0 0</pose>
           <uri>model://wood_square</uri>
         </include>
-      </model>
+      </model> -->
       <!-- <box>
         <size>20 20 0</size>
       </box> -->
-      <distribution>
+      <!-- <distribution>
         <type>grid</type>
-        <rows>10</rows>
-        <cols>10</cols>
+        <rows>20</rows>
+        <cols>20</cols>
         <step>2 2 0</step>
       </distribution>
     </population>    
+ -->
 
-
-    <model name="box_1">
+    <!-- <model name="box_1">
       <include>
         <name>box</name>
         <static>true</static>
@@ -219,11 +219,11 @@
         <uri>model://box</uri>
       </include>
     </model>
-
+ -->
     <!-- Elevator -->
 
     <!-- Left -->
-    <model name="left_elevator_wall_1">
+    <!-- <model name="left_elevator_wall_1">
       <include>
         <name>box</name>
         <static>true</static>
@@ -248,10 +248,10 @@
         <pose>6 2 0 0 0 0</pose>
         <uri>model://box</uri>
       </include>
-    </model>
+    </model> -->
 
     <!-- Right -->
-     <model name="right_elevator_wall_1">
+     <!-- <model name="right_elevator_wall_1">
       <include>
         <name>box</name>
         <static>true</static>
@@ -267,11 +267,11 @@
         <pose>6 5 0 0 0 0</pose>
         <uri>model://box</uri>
       </include>
-    </model>
+    </model> -->
 
     <!-- Behind -->
 
-    <model name="behind_elevator_wall_2">
+    <!-- <model name="behind_elevator_wall_2">
       <include>
         <name>box</name>
         <static>true</static>
@@ -279,6 +279,34 @@
         <uri>model://box</uri>
       </include>
     </model>
+ -->
+    <!-- map -->
+
+    <model name="map">
+      <static>true</static>
+      <pose>0 0 0 0 0 0</pose> <!-- x y z roll pitch yaw -->
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/models/map/goodElevatorImproved.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/models/map/goodElevatorImproved.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+
 
 
 
