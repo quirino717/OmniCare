@@ -2,11 +2,13 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionServer
 from rclpy.action import CancelResponse, GoalResponse
+
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
+from omnicare_msgs.action import EnterElevator  
 
-from omnicare_msgs.action import EnterElevator  # Auto-gerado após build
-import math
+import math, statistics
+from collections import deque
 
 class EnterElevatorServer(Node):
 
@@ -15,8 +17,9 @@ class EnterElevatorServer(Node):
 
 
         self.range_left, self.range_right, self.range_front = float('inf'), float('inf'), float('inf')
+        self.alignment_history = deque(maxlen=5)
 
-        simulation = self.declare_parameter('simulation',True).get_parameter_value().bool_value
+        simulation = self.declare_parameter('simulation',False).get_parameter_value().bool_value
         # simulation = self.get_parameter('simulation').get_parameter_value().bool_value
 
         self.get_logger().info(f'Simulation mode: {simulation}')
@@ -25,15 +28,15 @@ class EnterElevatorServer(Node):
             self.angle_right = -45
             self.angle_front =   0
 
-            self.vel_left  =   -0.1
-            self.vel_right =    0.1
+            self.vel_left  =   -0.05
+            self.vel_right =    0.05
         else:
             self.angle_left  = -135
             self.angle_right =  135
             self.angle_front =  180
 
-            self.vel_left  =   0.1
-            self.vel_right =  -0.1
+            self.vel_left  =   0.05
+            self.vel_right =  -0.05
 
 
 
@@ -84,6 +87,22 @@ class EnterElevatorServer(Node):
         index = max(0, min(index, len(scan_msg.ranges) - 1))  # clamp
         return index
     
+
+    def get_median_range_in_sector(self, scan_msg, start_angle_deg, end_angle_deg):
+        start_angle = math.radians(start_angle_deg)
+        end_angle = math.radians(end_angle_deg)
+
+        start_idx = self.get_scan_index(start_angle, scan_msg)
+        end_idx = self.get_scan_index(end_angle, scan_msg)
+
+        if start_idx > end_idx:
+            start_idx, end_idx = end_idx, start_idx
+
+        ranges = scan_msg.ranges[start_idx:end_idx+1]
+        valid = [r for r in ranges if 0.05 < r < scan_msg.range_max]
+
+        return statistics.median(valid) if valid else float('inf')
+    
     def get_average_range_in_sector(self, scan_msg, start_angle_deg, end_angle_deg):
         start_angle = math.radians(start_angle_deg)
         end_angle = math.radians(end_angle_deg)
@@ -103,9 +122,13 @@ class EnterElevatorServer(Node):
         return sum(valid_ranges) / len(valid_ranges)
 
     def laser_callback(self, msg):
-        self.range_left = self.get_average_range_in_sector(msg, self.angle_left - 5, self.angle_left + 5)
-        self.range_right = self.get_average_range_in_sector(msg, self.angle_right - 5, self.angle_right + 5)
-        self.range_front = self.get_average_range_in_sector(msg, self.angle_front - 2, self.angle_front + 2)
+        # self.range_left = self.get_average_range_in_sector(msg, self.angle_left - 5, self.angle_left + 5)
+        # self.range_right = self.get_average_range_in_sector(msg, self.angle_right - 5, self.angle_right + 5)
+        # self.range_front = self.get_average_range_in_sector(msg, self.angle_front - 2, self.angle_front + 2)
+        self.range_left  = self.get_median_range_in_sector(msg, self.angle_left  - 10, self.angle_left  + 10)
+        self.range_right = self.get_median_range_in_sector(msg, self.angle_right - 10, self.angle_right + 10)
+        self.range_front = self.get_median_range_in_sector(msg, self.angle_front -  4, self.angle_front  + 4)
+
         # self.get_logger().info(
         #     f"Frente: {self.range_front:.2f} m | Esq (+45°): {self.range_left:.2f} m | Dir (-45°): {self.range_right:.2f} m"
         # )
