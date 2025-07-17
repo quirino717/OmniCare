@@ -5,11 +5,11 @@
     <pose>0 0 0 0 -0 0</pose>
 
     <link name='Wall_0'>
-      <pose>0 -10 1 0 -0 0</pose>
+      <pose>0 -20 1 0 -0 0</pose>
       <collision name='Wall_0_Collision'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <max_contacts>10</max_contacts>
@@ -29,7 +29,7 @@
       <visual name='Wall_0_Visual'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <material>
@@ -49,11 +49,11 @@
     </link>
 
     <link name='Wall_1'>
-      <pose>10 -0 1 0 -0 1.5708</pose>
+      <pose>20 -0 1 0 -0 1.5708</pose>
       <collision name='Wall_1_Collision'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <max_contacts>10</max_contacts>
@@ -73,7 +73,7 @@
       <visual name='Wall_1_Visual'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <material>
@@ -93,11 +93,11 @@
     </link>
 
     <link name='Wall_2'>
-      <pose>0 10 1 0 0 3.14159</pose>
+      <pose>0 20 1 0 0 3.14159</pose>
       <collision name='Wall_2_Collision'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <max_contacts>10</max_contacts>
@@ -117,7 +117,7 @@
       <visual name='Wall_2_Visual'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <material>
@@ -137,11 +137,11 @@
     </link>
 
     <link name='Wall_3'>
-      <pose>-10 0 1 0 -0 -1.5708</pose>
+      <pose>-20 0 1 0 -0 -1.5708</pose>
       <collision name='Wall_3_Collision'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <max_contacts>10</max_contacts>
@@ -161,7 +161,7 @@
       <visual name='Wall_3_Visual'>
         <geometry>
           <box>
-            <size>20 0.15 2.0</size>
+            <size>40 0.15 2.0</size>
           </box>
         </geometry>
         <material>
