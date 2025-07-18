@@ -289,7 +289,7 @@
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/models/map/goodElevatorImproved.stl</uri>
+              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/models/map/quartoAndarGoodElevatorImproved.stl</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -298,7 +298,7 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/models/map/goodElevatorImproved.stl</uri>
+              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/models/map/quartoAndarGoodElevatorImproved.stl</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
