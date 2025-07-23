@@ -280,16 +280,16 @@
       </include>
     </model>
  -->
-    <!-- map -->
+    <!-- maps -->
 
-    <model name="map">
+    <model name="quarto_andar">
       <static>true</static>
-      <pose>0 0 0 0 0 0</pose> <!-- x y z roll pitch yaw -->
+      <pose>5.508699 -2.030616 0 0 0 0</pose> <!-- x y z roll pitch yaw -->
       <link name="link">
         <visual name="visual">
           <geometry>
             <mesh>
-              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/stl/quartoAndarGoodElevatorImproved.stl</uri>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quartoAndarElevatorImproved.stl</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -298,7 +298,32 @@
         <collision name="collision">
           <geometry>
             <mesh>
-              <uri>file:///home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/omnicare_simulation/simulation/stl/quartoAndarGoodElevatorImproved.stl</uri>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quartoAndarElevatorImproved.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+
+    <model name="quinto_andar">
+      <static>true</static>
+      <pose>-0.108398 10.440988 0 0 0 -2.605990</pose> <!-- x y z roll pitch yaw -->
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quintoAndarElevatorImproved.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quintoAndarElevatorImproved.stl</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>

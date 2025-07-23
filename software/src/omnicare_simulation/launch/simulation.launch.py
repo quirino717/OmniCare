@@ -10,7 +10,7 @@ def generate_launch_description():
 
     gz_model_path = SetEnvironmentVariable(
         name='GAZEBO_MODEL_PATH',
-        value=['/home/robot/gazebo_models:',get_package_share_directory('omnicare_simulation'),'/simulation/models:/opt/ros/humble/share/turtlebot3_gazebo/models']
+        value=[get_package_share_directory('omnicare_simulation'),'/simulation/models']
     )
 
     gz_model_uri = SetEnvironmentVariable(
@@ -27,7 +27,7 @@ def generate_launch_description():
     gzserver = IncludeLaunchDescription(
             PythonLaunchDescriptionSource([get_package_share_directory('gazebo_ros'), '/launch/gzserver.launch.py']),
             launch_arguments = {
-                'verbose': 'false',
+                'verbose': 'true',
                 'world': LaunchConfiguration('world_path')
             }.items()
         )
