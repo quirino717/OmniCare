@@ -22,6 +22,7 @@ set(msg_files
   "srv/OnOffNode.srv"
   "srv/SwitchFloor.srv"
   "srv/Checkpoints.srv"
+  "srv/TeleportFloor.srv"
 
    # ACT
    "action/EnterElevator.action"

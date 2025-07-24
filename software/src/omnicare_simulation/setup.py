@@ -38,8 +38,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'checkpoints = simulation_pkg.checkpoints:main',
-            'robot = simulation_pkg.robot:main'
+            'floor_teleport = omnicare_simulation.teleportRobotService:main'
         ],
     },
 )
