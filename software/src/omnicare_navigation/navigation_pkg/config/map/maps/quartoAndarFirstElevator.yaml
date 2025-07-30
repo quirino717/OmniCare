@@ -1,4 +1,4 @@
-image: quartoAndarFirstElevatorImproved.pgm
+image: quartoAndarFirstElevator.pgm
 mode: trinary
 resolution: 0.05
 origin: [-24.5, -15.6, 0]
