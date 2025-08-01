@@ -1,4 +1,4 @@
-image: simulationQuintoAndarFirstElevator.pgm
+image: FEI_quartoAndar_firstElevator.pgm
 mode: trinary
 resolution: 0.05
 origin: [-24.5, -15.6, 0]
