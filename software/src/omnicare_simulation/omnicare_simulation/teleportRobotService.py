@@ -22,7 +22,7 @@ class FloorTeleport(Node):
         # Defina as coordenadas dos andares
         self.floor_coords = {
             5: {'x': 0.0     , 'y': 0.0     , 'z': 0.1     , 'yaw': 0.0      },  # Andar 5
-            4: {'x': 1.842989, 'y': 2.640311, 'z': 0.120965, 'yaw': 1.15}   # Andar 4
+            4: {'x': 1.544303, 'y': 3.214141, 'z': 0.120965, 'yaw': 1.17}   # Andar 4
         }
 
         self.get_logger().info('Service /omnicare/teleport_floor pronto!')
