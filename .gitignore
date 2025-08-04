@@ -12,3 +12,6 @@
 ***/Debug
 
 */bags
+
+*__pycache__/
+
