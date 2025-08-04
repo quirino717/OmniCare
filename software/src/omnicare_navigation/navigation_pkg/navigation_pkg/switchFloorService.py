@@ -15,10 +15,10 @@ import time
 #                                                       omnicare_navigation/navigation_pkg/config/map/maps/quintoAndarElevador.yaml', x: -3.593, y: 12.41, yaw: 0.0}"
 #
 
-# ------------- Quarto Andar --------------------
-# posX: -3.270550772983917", posY: 12.333608159888565 yaw: -0.5
-#ros2 service call /switch_floor omnicare_msgs/srv/SwitchFloor "{map_path: '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/
-#                                                                       omnicare_navigation/navigation_pkg/config/map/maps/quartoAndar.yaml', x: -3.27, y: 12.33, yaw: -0.5}"
+# ------------- Quarto Andar Simulation--------------------
+# 
+# ros2 service call /switch_floor omnicare_msgs/srv/SwitchFloor "{map_path: '/home/llagoeiro/Desktop/FEI/TCC/TCC/software/src/
+#                                                                       omnicare_navigation/navigation_pkg/config/map/maps/quartoAndar.yaml', x: -4.84, y: 2.79, yaw: 0.0}"
 
 
 class MapLoader(Node):
