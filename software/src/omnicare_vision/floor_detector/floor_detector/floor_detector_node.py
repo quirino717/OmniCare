@@ -108,7 +108,7 @@ class FloorDetector(Node):
         
         # finds first the elevator display
         display_img = self.find_display(img, display_results)
-        self.display_publisher.publish(self.bridge.cv2_to_imgmsg(display_img))
+        self.display_publisher.publish(self.bridge.cv2_to_imgmsg(display_img, encoding='bgr8'))
         
         # Model was treined with 640x640 with filled edges
         display_img = self.preprocessing_display_img(display_img, size=640)
