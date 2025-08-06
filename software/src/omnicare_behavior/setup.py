@@ -1,8 +1,9 @@
 from setuptools import find_packages, setup
 import os
 
-package_name = 'omnicare_behavior'
-submodules_path = f"{package_name}/states" # Define path to submodules
+package_name    = 'omnicare_behavior'
+submodules_path = f"{package_name}/states" 
+utils_path      = f"{package_name}/utils"
 
 data_files=[
    ('share/ament_index/resource_index/packages',
@@ -30,12 +31,8 @@ def package_files(data_files, directory_list):
 setup(
     name=package_name,
     version='0.0.0',
-    packages=[package_name, submodules_path],
-    data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
-    ],
+    packages=[package_name, submodules_path, utils_path],
+    data_files=package_files(data_files, [ 'config/','launch/']),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='llagoeiro',

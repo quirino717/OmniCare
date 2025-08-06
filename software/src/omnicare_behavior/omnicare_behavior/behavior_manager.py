@@ -10,8 +10,9 @@ from omnicare_msgs.action import EnterElevator  # Auto-gerado após build
 
 
 # from omnicare_behavior.action import EnterElevator
-from omnicare_behavior.states.floor_navigation import start_floor_navigation, start_checkpoints
+from omnicare_behavior.states.floor_navigation import switch_floor, start_checkpoints
 from omnicare_behavior.states.enter_elevator import enter_elevator_behavior
+from omnicare_behavior.utils.parsing_yaml import extract_map_configuration
 
 import time
 
@@ -20,6 +21,8 @@ class ElevatorBehaviorManager(Node):
 
     def __init__(self):
         super().__init__('elevator_behavior_manager')
+
+        self.simulation = self.declare_parameter('simulation',True).get_parameter_value().bool_value
 
         # Define os estados e o mapa de transições
         self.states = {
@@ -88,10 +91,11 @@ class ElevatorBehaviorManager(Node):
     def floor_navigation(self):
         self.get_logger().info("Iniciando navegação no andar...")
 
-        start_floor_navigation(
-            floor=3,  # Which floor to start navigation
+        switch_floor(
+            floor=5,  # Which floor to start navigation
             node=self, # Pass the current node instance
             switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
+            simulation=self.simulation # Pass the simulation flag
         )
 
         start_checkpoints(
@@ -154,10 +158,11 @@ class ElevatorBehaviorManager(Node):
 
     def exit_elevator(self):
         self.get_logger().info("Executando saída do elevador (action)...")
-        start_floor_navigation(
+        switch_floor(
             floor=4,  # Which floor to start navigation
             node=self, # Pass the current node instance
             switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
+            simulation=self.simulation # Pass the simulation flag
         )
 
         start_checkpoints(
