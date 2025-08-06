@@ -1,0 +1,7 @@
+dataset_generator:
+  ros__parameters:
+    img_topic_name  : 'camera1/image_raw'
+    # img_topic_name  : 'floor_detector/elevator_display'
+    output_frame_fps: 3
+    output_prefix_filename: 'frame'
+    output_dir_path: '/home/thiago/TCC/software/bags/dataset/'

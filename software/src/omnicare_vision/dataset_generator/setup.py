@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 from glob import glob
 
-package_name = 'floor_detector'
+package_name = 'dataset_generator'
 
 setup(
     name=package_name,
@@ -11,20 +11,19 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/weights', glob('weights/*')),
         ('share/' + package_name + '/launch', glob('launch/*')),
         ('share/' + package_name + '/config', glob('config/*'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Thiago M.',
+    maintainer='thiago',
     maintainer_email='rpj134@gmail.com',
-    description='Package for floor detection inside the elevator',
+    description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'floor_detector_node = floor_detector.floor_detector_node:main',
+            'dataset_generator_node = dataset_generator.dataset_generator_node:main',
         ],
     },
 )
