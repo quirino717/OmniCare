@@ -96,6 +96,7 @@ class FloorDetector(Node):
     def cam_subscriber_callback(self, msg):
         self.get_logger().debug('Received an image')
         self.image_raw = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        self.last_header = msg.header
         self.detect_floor(self.image_raw.copy())
 
     def detect_floor(self, img):        
@@ -108,7 +109,10 @@ class FloorDetector(Node):
         
         # finds first the elevator display
         display_img = self.find_display(img, display_results)
-        self.display_publisher.publish(self.bridge.cv2_to_imgmsg(display_img, encoding='bgr8'))
+
+        display_img_msg = self.bridge.cv2_to_imgmsg(display_img, encoding='bgr8')
+        display_img_msg.header = self.last_header
+        self.display_publisher.publish(display_img_msg)
         
         # Model was treined with 640x640 with filled edges
         display_img = self.preprocessing_display_img(display_img, size=640)
