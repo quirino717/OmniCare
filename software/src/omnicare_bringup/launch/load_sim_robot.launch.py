@@ -87,7 +87,7 @@ def generate_launch_description():
         arguments=[
             '-entity', 'OmniCare', 
             '-topic', 'robot_description', 
-            '-x', '1.743922', '-y', '-3.568929', '-z', '0.105334', '-Y', '1.0',
+            '-x', '1.13', '-y', '-3.17', '-z', '0.105334', '-Y', '1.07',
             '--ros-args', '--log-level', LaunchConfiguration('log_level')]
     )
 
