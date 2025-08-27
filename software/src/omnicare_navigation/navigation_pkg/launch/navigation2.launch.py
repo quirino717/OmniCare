@@ -21,7 +21,7 @@ def generate_launch_description():
     params_file_arg = DeclareLaunchArgument(name='params_file', default_value= get_package_share_directory('navigation_pkg') + '/config/nav/sim_nav2_params.yaml',
                                         description='Flag of the path of NAV2 params file')
 
-    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/simulation_map.yaml',
+    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/terceiroAndarLastPART.yaml',
                                         description='Flag of the path of map file')
     
     log_level_arg = DeclareLaunchArgument(name='log_level', default_value='ERROR',
@@ -88,7 +88,7 @@ def generate_launch_description():
         parameters=[{
             'checkpoints_file': get_package_share_directory('navigation_pkg')+'/config/map/checkpoints/simulation_checkpoints.json'
         }],
-        # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
+        arguments=['--ros-args', '--log-level', 'INFO'],
     )
 
     switchFloor = Node(
@@ -96,7 +96,7 @@ def generate_launch_description():
         executable='switchFloorService',
         name='switchFloorService',
         output='screen',
-        # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
+        arguments=['--ros-args', '--log-level', 'INFO'],
     )
 
     enterElevator = Node(
@@ -104,7 +104,19 @@ def generate_launch_description():
         executable='enterElevatorAction',
         name='enterElevatorAction',
         output='screen',
-        # arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
+        parameters=[{
+            'simulation': LaunchConfiguration('use_sim_time'),
+        }],
+        arguments=['--ros-args', '--log-level', 'INFO'],
+    )
+
+    teleportRobot = Node(
+        package='omnicare_simulation',
+        executable='floor_teleport',
+        name='floor_teleport',
+        output='screen',
+        condition=IfCondition(LaunchConfiguration('use_sim_time')),
+        arguments=['--ros-args', '--log-level', 'INFO'],
     )
 
 
@@ -122,6 +134,7 @@ def generate_launch_description():
     ld.add_action(delayed_nav2)
     ld.add_action(checkpoint)
     ld.add_action(switchFloor)
-    ld.add_action(enterElevator)
+    # ld.add_action(enterElevator)
+    ld.add_action(teleportRobot)
 
     return ld

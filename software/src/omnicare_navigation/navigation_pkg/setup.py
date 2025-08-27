@@ -42,6 +42,7 @@ setup(
             'checkpointsService = navigation_pkg.checkpointsService:main',
             'switchFloorService = navigation_pkg.switchFloorService:main',
             'floorManagerNode = navigation_pkg.floorManagerNode:main',
+            'amclOrientationNode = navigation_pkg.amclOrientationNode:main',
             'enterElevatorAction = navigation_pkg.enterElevatorAction:main',
         ],
     },

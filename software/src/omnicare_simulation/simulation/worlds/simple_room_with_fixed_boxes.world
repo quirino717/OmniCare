@@ -2,11 +2,11 @@
 <sdf version="1.6">
   <world name="simple_room_with_fixed_boxes">
 
-    <gui fullscreen='0'>
+    <!-- <gui fullscreen='0'>
       <camera name='user_camera'>
         <pose>0 0 40 0 1.57 0</pose>
       </camera>
-    </gui>
+    </gui> -->
 
     <include>
       <uri>model://ground_plane</uri>
@@ -16,272 +16,62 @@
       <uri>model://sun</uri>
     </include>
 
-    <include>
-      <uri>model://simple_room</uri>
-      <pose>0 0 0 0 -0 0</pose>
-    </include>
+    <!-- maps -->
 
-    <population name="square_population">
-      <pose>-0.5 -0.5 0 0 0 0</pose>
-      <model name="chess">
-        <include>
-          <name>square1</name>
-          <static>true</static>
-          <pose>0 0 0 0 0 0</pose>
-          <uri>model://wood_square</uri>
-        </include>
-        <include>
-          <name>square2</name>
-          <static>true</static>
-          <pose>1 1 0 0 0 0</pose>
-          <uri>model://wood_square</uri>
-        </include>
-      </model>
-      <!-- <box>
-        <size>20 20 0</size>
-      </box> -->
-      <distribution>
-        <type>grid</type>
-        <rows>10</rows>
-        <cols>10</cols>
-        <step>2 2 0</step>
-      </distribution>
-    </population>    
+    <model name="quinto_andar">
+      <static>true</static>
+      <pose>-2.540289 -2.030616 0 0 0 0</pose> <!-- x y z roll pitch yaw -->
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quintoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
 
-
-    <model name="box_1">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>0 -2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quintoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
     </model>
 
-    <model name="box_2">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-3 -1 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
+    <model name="quarto_andar">
+      <static>true</static>
+      <pose>4.336509 6.076185 0 0 0 -3.126995</pose> <!-- x y z roll pitch yaw -->
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quartoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quartoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
     </model>
 
-    <model name="box_3">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-3 -6 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_4">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-4 -9 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_5">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-5 -3 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_6">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-5 -2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_7">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-6 -5 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_8">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-8 -2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_9">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-8 -4 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_10">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>-9 -4 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_11">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>0 2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_12">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>3 2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_13">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>3 4 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_14">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>4 5 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_15">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>5 5 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_17">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>6 8 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_18">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>8 8 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_19">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>8 9 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="box_20">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>9 9 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <!-- Elevator -->
-
-    <!-- Left -->
-    <model name="left_elevator_wall_1">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>4 2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="left_elevator_wall_2">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>5 2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="left_elevator_wall_3">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>6 2 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <!-- Right -->
-     <model name="right_elevator_wall_1">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>3 5 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <model name="right_elevator_wall_2">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>6 5 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-    <!-- Behind -->
-
-    <model name="behind_elevator_wall_2">
-      <include>
-        <name>box</name>
-        <static>true</static>
-        <pose>3 3 0 0 0 0</pose>
-        <uri>model://box</uri>
-      </include>
-    </model>
-
-
-
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <update_rate>1.0</update_rate>
+    </plugin>
 
   </world>
 </sdf>

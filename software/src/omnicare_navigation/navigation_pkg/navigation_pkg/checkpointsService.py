@@ -58,12 +58,13 @@ class checkpointsService(Node):
     def save_callback(self, request, response):
 
         try:
-            filename = f"{self.package_share_directory}/config/map/checkpoints/{request.floor}_checkpoints.json"          
+            filename = f"{self.package_share_directory}/config/checkpoint/{request.floor}_checkpoints.json"          
             dictObj = []
         
             # Check if file exists
             if path.isfile(filename) is False:
-                raise Exception("File not found on this path: " + str(filename))
+                self.get_logger().error(f"File not found: {filename}")
+                response.success = False
         
             # Read JSON file
             with open(filename) as fp:
@@ -108,7 +109,7 @@ class checkpointsService(Node):
         self.get_logger().info(f"Received request to start checkpoints for floor: {request.floor}")
 
         try:
-            checkpoints_file = f"{self.package_share_directory}/config/map/checkpoints/{request.floor}_checkpoints.json"
+            checkpoints_file = f"{self.package_share_directory}/config/checkpoint/{request.floor}_checkpoints.json"
             self.get_logger().info(f"Starting checkpoints from file: {checkpoints_file}")
 
             f = open(checkpoints_file)

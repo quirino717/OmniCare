@@ -85,8 +85,9 @@ def generate_launch_description():
     	package='gazebo_ros', 
     	executable='spawn_entity.py',
         arguments=[
-            '-entity', 'sam_bot', 
+            '-entity', 'OmniCare', 
             '-topic', 'robot_description', 
+            '-x', '1.13', '-y', '-3.17', '-z', '0.105334', '-Y', '1.07',
             '--ros-args', '--log-level', LaunchConfiguration('log_level')]
     )
 

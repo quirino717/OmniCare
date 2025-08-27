@@ -1,0 +1,23 @@
+real:
+  5:
+    map_path: "config/maps/FEI/FEI_quintoAndar_firstElevatorImproved.yaml"
+    x: -4.03
+    y: -1.35
+    yaw: 0.95
+  4:
+    map_path: "config/maps/simulation/real_quarto.yaml"
+    x: 10.0
+    y: 10.0
+    yaw: 0.0
+
+sim:
+  5:
+    map_path: "config/maps/simulation/simulation_quintoAndar_firstElevator.yaml"
+    x: -3.986
+    y: -1.120
+    yaw: 0.95
+  4:
+    map_path: "config/maps/simulation/simulation_quartoAndar_firstElevator.yaml"
+    x: -4.78
+    y: 2.89
+    yaw: -1.97
