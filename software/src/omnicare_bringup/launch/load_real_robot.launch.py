@@ -108,9 +108,7 @@ def generate_launch_description():
         )
 
 
-
-
-        # Path to your teleop launch file (example)
+    # Path to your teleop launch file (example)
     teleop_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -121,6 +119,7 @@ def generate_launch_description():
         ),
         condition=IfCondition(LaunchConfiguration('teleop'))
     )
+
     robot_description = Command(['ros2 param get --hide-type /robot_state_publisher robot_description'])
     controller_params_file =  os.path.join(get_package_share_directory('omnidirectional_controllers'), 'config/omnidirectional_controller.yaml') 
     
@@ -132,7 +131,13 @@ def generate_launch_description():
         output="both",
     )
 
-    delayed_controller_manager = TimerAction(period=3.0, actions=[controller_manager])
+    # Só inicia o controller_manager DEPOIS que o robot state publisher "startar" + 1s
+    start_controller_after_rsp = RegisterEventHandler(
+        OnProcessStart(
+            target_action=robot_state_publisher_node,
+            on_start=[TimerAction(period=3.0, actions=[controller_manager])]
+        )
+    )
 
     omni_base_controller_spawner = Node(
         package="controller_manager",
@@ -199,7 +204,7 @@ def generate_launch_description():
         laser_filter,
         teleop_launch,
         # twist_mux, #MUX de prioridade das velocidades
-        delayed_controller_manager, #ROS2_CONTROL
+        start_controller_after_rsp, #ROS2_CONTROL
         omni_base_controller_event_handler, #ROS2_CONTROL
         joint_state_broadcaster_event_handler, #ROS2_CONTROL
         robot_localization_node #EKF + Publish Odom frame to transform
