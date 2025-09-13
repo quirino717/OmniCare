@@ -47,6 +47,14 @@ pip install onnx_graphsurgeon
 pip install sng4onnx
 pip install tflite_support
 
+pip install paho-mqtt
+sudo apt install -y mosquitto
+sudo apt install -y mosquitto-clients
+sudo systemctl enable mosquitto
+systemctl start mosquitto
+# sudo vim /etc/mosquitto/mosquitto.conf -> para ouvir o 1883 e dar allow em anonymous_users
+crontab -e # para iniciar a inteface com o omnicontroler -> @reboot bash $HOME/TCC/startup.sh > $HOME/log.txt 2>&1
+
 #################################################################
 #                       _                                       #
 #                      / \   _ __  _ __  ___                    #
