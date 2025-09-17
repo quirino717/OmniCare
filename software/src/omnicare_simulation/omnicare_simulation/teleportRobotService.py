@@ -12,7 +12,7 @@ class FloorTeleport(Node):
         super().__init__('floor_teleport')
         
         # Cria service
-        self.srv = self.create_service(TeleportFloor, '/omnicare/teleport_floor', self.teleport_cb)
+        self.srv = self.create_service(TeleportFloor, '/omnicare/simulation/teleport_floor', self.teleport_cb)
 
         # Cliente para Gazebo
         self.cli = self.create_client(SetEntityState, '/gazebo/set_entity_state')
@@ -25,7 +25,7 @@ class FloorTeleport(Node):
             4: {'x': 1.544303, 'y': 3.214141, 'z': 0.120965, 'yaw': 1.17}   # Andar 4
         }
 
-        self.get_logger().info('Service /omnicare/teleport_floor pronto!')
+        self.get_logger().info('Service /omnicare/simulation/teleport_floor pronto!')
 
     def yaw_to_quaternion(self,yaw):
         half_yaw = yaw / 2.0
