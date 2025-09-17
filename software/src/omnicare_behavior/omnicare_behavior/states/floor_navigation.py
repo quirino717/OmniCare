@@ -1,6 +1,9 @@
-from omnicare_msgs.srv import SwitchFloor, Checkpoints  
+import rclpy
+
+from omnicare_msgs.srv import SwitchFloor, Checkpoints, TeleportFloor  
 from ament_index_python.packages import get_package_share_directory
 from omnicare_behavior.utils.parsing_yaml import extract_map_configuration
+import time
 
 
 # Só para não perder os checkpoints. Não apagar!!!!
@@ -57,6 +60,11 @@ def switch_floor(floor: int, node, switch_floor_client,simulation):
             node.get_logger().error(f"Erro na chamada do serviço SwitchFloor: {e}")
             node.current_state = 'ERROR'
 
+    # print(switched_map)
+    # if not switched_map:
+    #     node.get_logger().error("Timeout aguardando resposta do SwitchFloor.")
+    #     return False
+    # else:
     future.add_done_callback(response_callback)
 
 def start_checkpoints(floor: str, node, start_checkpoint_client):
@@ -95,3 +103,40 @@ def start_checkpoints(floor: str, node, start_checkpoint_client):
             node.current_state = 'ERROR'
 
     future.add_done_callback(response_callback)
+
+def teleport_robot(floor: int, node, teleport_robot_client):
+    """
+    Inicia o serviço de teleportar o robô para a simulação.
+
+    Args:
+        floor (int): andar para iniciar os checkpoints
+        node (rclpy.node.Node): instância do nó que chama a função
+        teleport_robot_client (Client): cliente do serviço teleport_robot
+    """
+    req = TeleportFloor.Request()
+    req.target_floor = floor
+
+
+    node.get_logger().info(f"Teleportando robô para o andar {floor}...")
+    if not teleport_robot_client.wait_for_service(timeout_sec=5.0):
+        node.get_logger().error("Serviço de TeleportFloor não está disponível.")
+        return
+    
+    future = teleport_robot_client.call_async(req)
+
+    def response_callback(future):
+        try:
+            result = future.result()
+            if result.success:
+                node.get_logger().info(f"Teleport do robô feito com sucesso para o andar {floor}.")
+            else:
+                node.get_logger().warn(f"Falha ao iniciar o teleport: {result.message}")
+                node.current_state = 'ERROR'
+        except Exception as e:
+            node.get_logger().error(f"Erro na chamada do serviço de teleport: {e}")
+            node.current_state = 'ERROR'
+
+    future.add_done_callback(response_callback)
+
+
+    pass
