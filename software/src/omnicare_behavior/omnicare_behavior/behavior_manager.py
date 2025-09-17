@@ -5,16 +5,14 @@ from std_msgs.msg import Bool
 from std_srvs.srv import Trigger
 from rclpy.action import ActionClient
 
-from omnicare_msgs.srv import SwitchFloor, Checkpoints
-from omnicare_msgs.action import EnterElevator  # Auto-gerado após build
+from omnicare_msgs.srv import SwitchFloor, Checkpoints, TeleportFloor
+from omnicare_msgs.action import EnterElevator 
 
 
 # from omnicare_behavior.action import EnterElevator
-from omnicare_behavior.states.floor_navigation import switch_floor, start_checkpoints
+from omnicare_behavior.states.floor_navigation import switch_floor, start_checkpoints, teleport_robot
 from omnicare_behavior.states.enter_elevator import enter_elevator_behavior
 from omnicare_behavior.utils.parsing_yaml import extract_map_configuration
-
-import time
 
 
 class ElevatorBehaviorManager(Node):
@@ -23,6 +21,8 @@ class ElevatorBehaviorManager(Node):
         super().__init__('elevator_behavior_manager')
 
         self.simulation = self.declare_parameter('simulation',True).get_parameter_value().bool_value
+        self.actual_floor = self.declare_parameter('actual_floor', 5).get_parameter_value().integer_value
+        self.target_floor = self.declare_parameter('target_floor', 4).get_parameter_value().integer_value
 
         # Define os estados e o mapa de transições
         self.states = {
@@ -36,7 +36,7 @@ class ElevatorBehaviorManager(Node):
         }
 
 
-        self.ret = False
+        self.start_navigation = True 
         self.current_state = 'FLOOR_NAVIGATION'
 
         # Subscribes
@@ -52,6 +52,7 @@ class ElevatorBehaviorManager(Node):
 
         # Service Clients
         self.switch_floor = self.create_client(SwitchFloor, '/omnicare/navigation/switch_floor')
+        self.teleport_robot = self.create_client(TeleportFloor, '/omnicare/simulation/teleport_floor')
         self.startCheckpoint = self.create_client(Checkpoints, '/omnicare/checkpoints/start')
 
 
@@ -86,26 +87,43 @@ class ElevatorBehaviorManager(Node):
         self.get_logger().info(f"Received checkpoint done signal: {msg.data}")
         if msg.data:
             self.get_logger().info("Checkpoint atingido!")
-            self.current_state = 'ENTER_ELEVATOR'
+            self.current_state = 'WAIT_FOR_FLOOR'
 
     def floor_navigation(self):
-        self.get_logger().info("Iniciando navegação no andar...")
 
-        switch_floor(
-            floor=5,  # Which floor to start navigation
-            node=self, # Pass the current node instance
-            switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
-            simulation=self.simulation # Pass the simulation flag
-        )
+        if self.start_navigation:
+            self.get_logger().info("Iniciando navegação no andar atual...")
 
-        start_checkpoints(
-            floor="simulation",  # Which floor to start checkpoints
-            node=self, # Pass the current node instance
-            start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
-        )
+            switch_floor(
+                floor=self.actual_floor,  # Which floor to start navigation 
+                node=self, # Pass the current node instance
+                switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
+                simulation=self.simulation # Pass the simulation flag
+            )
+                        
+            start_checkpoints(
+                floor="simulation_quintoAndar",  # Which floor to start checkpoints
+                node=self, # Pass the current node instance
+                start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
+            )
+        else:
+            self.get_logger().info("Iniciando navegação no andar alvo...")
+            switch_floor(
+                floor=self.target_floor,  
+                node=self, 
+                switch_floor_client=self.switch_floor, 
+                simulation=self.simulation 
+            )
+                        
+            # start_checkpoints(
+            #     floor="simulation_quartoAndar",  # Which floor to start checkpoints
+            #     node=self, # Pass the current node instance
+            #     start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
+            # )
+
 
         self.current_state = 'WAITING_CHECKPOINT_GOAL'
-
+    
     #  ------------------------------  END -------------------------------
 
     #  ------------------------------  Waiting Checkpoint State -------------------------------
@@ -139,8 +157,20 @@ class ElevatorBehaviorManager(Node):
 
     def debug_sub_cb(self, msg):
         if msg.data:
+            if self.simulation:
+                # Teleport the robot to the correct floor in simulation
+                teleport_robot( 
+                    floor=4,  # Which floor to teleport
+                    node=self, # Pass the current node instance
+                    teleport_robot_client=self.teleport_robot # Pass the TeleportFloor client instance
+                )
+
+            else:
+                pass # In real robot, we don't teleport, we just switch the floor
+
+            self.start_navigation = False # Flag to alert the navigation is already started
             self.get_logger().info("Debug: Chegou no andar correto!")
-            self.current_state = 'EXIT_ELEVATOR'
+            self.current_state = 'FLOOR_NAVIGATION'
         else:
             self.get_logger().info("Debug: Ainda não chegou no andar correto.")
 
@@ -148,7 +178,6 @@ class ElevatorBehaviorManager(Node):
     def wait_for_floor(self):
         # Aqui você pode monitorar a mudança de andar via tópico de visão
         self.get_logger().info("Se posicionando e aguardando chegada no 4º andar (via visão)...")
-        # time.sleep(3)  # Simulação
         # self.current_state = 'EXIT_ELEVATOR'
 
 
@@ -158,18 +187,18 @@ class ElevatorBehaviorManager(Node):
 
     def exit_elevator(self):
         self.get_logger().info("Executando saída do elevador (action)...")
-        switch_floor(
-            floor=4,  # Which floor to start navigation
-            node=self, # Pass the current node instance
-            switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
-            simulation=self.simulation # Pass the simulation flag
-        )
+        # switch_floor(
+        #     floor=4,  # Which floor to start navigation
+        #     node=self, # Pass the current node instance
+        #     switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
+        #     simulation=self.simulation # Pass the simulation flag
+        # )
 
-        start_checkpoints(
-            floor="simulation_exit",  # Which floor to start checkpoints
-            node=self, # Pass the current node instance
-            start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
-        )
+        # start_checkpoints(
+        #     floor="simulation_exit",  # Which floor to start checkpoints
+        #     node=self, # Pass the current node instance
+        #     start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
+        # )
 
         # Você pode fazer igual ao `enter_elevator`
         # self.current_state = 'FLOOR_NAVIGATION'
