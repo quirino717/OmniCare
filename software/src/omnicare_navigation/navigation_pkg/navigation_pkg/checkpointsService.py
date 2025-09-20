@@ -76,7 +76,7 @@ class checkpointsService(Node):
         self.tf_p_x = tf_p.x
         self.tf_p_y = tf_p.y
 
-        self.get_logger().info(f'TF: I heard posX: "{self.p_x}", posY: {self.p_y}')
+        self.get_logger().debug(f'TF: I heard posX: "{self.p_x}", posY: {self.p_y}')
 
         # self.get_logger().info(f"The subtraction is: X={abs(self.init_p_x - self.tf_p_x)} and Y={abs(self.init_p_y - self.tf_p_y)}")
 
@@ -189,6 +189,7 @@ class checkpointsService(Node):
         range = 0.1
         if abs(self.init_p_x - self.tf_p_x) < range and abs(self.init_p_y - self.tf_p_y) < range:
             self._start_follow_waypoints(self.poses)
+            self.poses = []
             self.gate_timer.cancel()
             self.gate_timer = None
             self.get_logger().info('Convergência TF≈SET_POSE atingida. Iniciando FollowWaypoints.')

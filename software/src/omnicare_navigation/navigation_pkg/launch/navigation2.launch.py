@@ -120,6 +120,17 @@ def generate_launch_description():
         arguments=['--ros-args', '--log-level', 'ERROR'],
     )
 
+    poseFromTF = Node(
+        package='navigation_pkg',
+        executable='poseFromTFNode',
+        name='poseFromTFNode',
+        parameters=[{
+            'target_frame': 'map',
+            'source_frame': 'base_link',
+            'rate_hz': 5.0
+        }]
+    )
+
 
 # -----------------------------------------------------
 
@@ -137,5 +148,6 @@ def generate_launch_description():
     ld.add_action(switchFloor)
     # ld.add_action(enterElevator)
     ld.add_action(teleportRobot)
+    ld.add_action(poseFromTF)
 
     return ld

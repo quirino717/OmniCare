@@ -87,7 +87,8 @@ class ElevatorBehaviorManager(Node):
         self.get_logger().info(f"Received checkpoint done signal: {msg.data}")
         if msg.data:
             self.get_logger().info("Checkpoint atingido!")
-            self.current_state = 'WAIT_FOR_FLOOR'
+            if self.start_navigation: self.current_state = 'WAIT_FOR_FLOOR'
+            else: self.current_state = 'DONE'
 
     def floor_navigation(self):
 
@@ -115,11 +116,11 @@ class ElevatorBehaviorManager(Node):
                 simulation=self.simulation 
             )
                         
-            # start_checkpoints(
-            #     floor="simulation_quartoAndar",  # Which floor to start checkpoints
-            #     node=self, # Pass the current node instance
-            #     start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
-            # )
+            start_checkpoints(
+                floor="simulation_quartoAndar",  # Which floor to start checkpoints
+                node=self, # Pass the current node instance
+                start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
+            )
 
 
         self.current_state = 'WAITING_CHECKPOINT_GOAL'
@@ -129,7 +130,7 @@ class ElevatorBehaviorManager(Node):
     #  ------------------------------  Waiting Checkpoint State -------------------------------
 
     def waiting_checkpoints(self):
-        self.get_logger().info("Aguardando sinal do checkpoint...")
+        # self.get_logger().info("Aguardando sinal do checkpoint...")
         pass
 
 
