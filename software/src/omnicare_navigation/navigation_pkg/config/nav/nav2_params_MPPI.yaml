@@ -138,6 +138,7 @@ controller_server:
       iteration_count: 1
       prune_distance: 1.7
       transform_tolerance: 0.1
+      inversion_yaw_tolerance: 0.2
       temperature: 0.3
       gamma: 0.015
       motion_model: "Omni"
@@ -218,7 +219,7 @@ local_costmap:
       width: 5
       height: 5
       resolution: 0.05
-      robot_radius: 0.3
+      robot_radius: 0.15
       plugins: ["obstacle_layer", "denoise_layer", "inflation_layer"]
 
       obstacle_layer:
@@ -232,9 +233,9 @@ local_costmap:
           marking: True
           data_type: LaserScan
           raytrace_max_range: 3.0
-          raytrace_min_range: 0.2
+          raytrace_min_range: 0.6
           obstacle_max_range: 2.5
-          obstacle_min_range: 0.2 
+          obstacle_min_range: 0.6 
 
       denoise_layer:
         plugin: "nav2_costmap_2d::DenoiseLayer"
@@ -259,7 +260,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: False
-      robot_radius: 0.3
+      robot_radius: 0.15
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -279,9 +280,9 @@ global_costmap:
           marking: True
           data_type: "LaserScan"
           raytrace_max_range: 3.0
-          raytrace_min_range: 0.5
+          raytrace_min_range: 0.6
           obstacle_max_range: 2.5
-          obstacle_min_range: 0.5
+          obstacle_min_range: 0.6
 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
