@@ -2,8 +2,8 @@ from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PythonExpression
-from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, TextSubstitution
+from launch.actions import DeclareLaunchArgument, LogInfo
 from launch_ros.actions import Node
 from launch.conditions import IfCondition, UnlessCondition
 from launch.actions import DeclareLaunchArgument, TimerAction, RegisterEventHandler
@@ -21,12 +21,13 @@ def generate_launch_description():
     params_file_arg = DeclareLaunchArgument(name='params_file', default_value= get_package_share_directory('navigation_pkg') + '/config/nav/sim_nav2_params.yaml',
                                         description='Flag of the path of NAV2 params file')
 
-    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/map/maps/terceiroAndarLastPART.yaml',
+    path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/maps/simulation/simulation_quintoAndar_firstElevator.yaml',
                                         description='Flag of the path of map file')
     
     log_level_arg = DeclareLaunchArgument(name='log_level', default_value='ERROR',
                                         description='Flag of the log level for ROS2 nodes')
     
+
 # -----------------------------------------------------
 
     simulation = IncludeLaunchDescription(
@@ -75,7 +76,7 @@ def generate_launch_description():
             'autostart': 'True',
             'use_composition': 'True',
             'use_respawn': 'False',
-            'log_level': LaunchConfiguration('log_level'),
+            'log_level': 'ERROR',
         }.items()
     )
 
@@ -88,7 +89,7 @@ def generate_launch_description():
         parameters=[{
             'checkpoints_file': get_package_share_directory('navigation_pkg')+'/config/map/checkpoints/simulation_checkpoints.json'
         }],
-        arguments=['--ros-args', '--log-level', 'INFO'],
+        arguments=['--ros-args', '--log-level', 'ERROR'],
     )
 
     switchFloor = Node(
@@ -96,7 +97,7 @@ def generate_launch_description():
         executable='switchFloorService',
         name='switchFloorService',
         output='screen',
-        arguments=['--ros-args', '--log-level', 'INFO'],
+        arguments=['--ros-args', '--log-level', 'ERROR'],
     )
 
     enterElevator = Node(
@@ -107,7 +108,7 @@ def generate_launch_description():
         parameters=[{
             'simulation': LaunchConfiguration('use_sim_time'),
         }],
-        arguments=['--ros-args', '--log-level', 'INFO'],
+        arguments=['--ros-args', '--log-level', 'ERROR'],
     )
 
     teleportRobot = Node(
@@ -116,7 +117,7 @@ def generate_launch_description():
         name='floor_teleport',
         output='screen',
         condition=IfCondition(LaunchConfiguration('use_sim_time')),
-        arguments=['--ros-args', '--log-level', 'INFO'],
+        arguments=['--ros-args', '--log-level', 'ERROR'],
     )
 
 
