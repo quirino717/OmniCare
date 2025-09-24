@@ -3,10 +3,10 @@ from rclpy.node import Node
 
 from std_msgs.msg import Bool
 from std_srvs.srv import Trigger
-from rclpy.action import ActionClient
+from rclpy.action import ActionServer, ActionClient
 
 from omnicare_msgs.srv import SwitchFloor, Checkpoints, TeleportFloor
-from omnicare_msgs.action import EnterElevator 
+from omnicare_msgs.action import EnterElevator, RunMission
 
 
 # from omnicare_behavior.action import EnterElevator
@@ -36,8 +36,8 @@ class ElevatorBehaviorManager(Node):
         }
 
 
-        self.start_navigation = True 
-        self.current_state = 'FLOOR_NAVIGATION'
+        # self.start_navigation = True 
+        # self.current_state = 'FLOOR_NAVIGATION'
 
         # Subscribes
         self.checkpoints_sub = self.create_subscription(
@@ -64,15 +64,53 @@ class ElevatorBehaviorManager(Node):
         # self.enter_elevator_client = ActionClient(self, EnterElevator, '/enter_elevator')
         # self.activate_floor_client = self.create_client(Trigger, '/activate_floor_nav')
 
-        self.timer = self.create_timer(1.0, self.state_machine_loop)
+        # self.timer = self.create_timer(1.0, self.state_machine_loop)
+        self.feedback_msg_, self.result_ = None, None
+        self.run_srv = ActionServer(self, RunMission, '/omnicare/behavior/run_mission',
+                                    execute_callback=self._state_machine_loop,
+                                    cancel_callback=self._cancel_cb)
+        self.goal_handle_ = None
 
+
+    #  ------------------------------  ACTION SERVER ------------------------------
+    async def _state_machine_loop(self, goal_handle):
+        self.get_logger().info('RunMission action started.')
+        self.ret = False
+
+        self.feedback_msg_ = RunMission.Feedback()
+        self.result_ = RunMission.Result()
+
+        
+        # Reset state machine
+        self.current_state = 'FLOOR_NAVIGATION'
+        self.start_navigation = True
+
+        rate = self.create_rate(10) #10 Hz
+        while rclpy.ok():
+            self._check_states()
+            goal_handle.publish_feedback(self.feedback_msg_)
+
+            if self.current_state in ['DONE', 'ERROR']: 
+                break
+            rate.sleep()  # Sleep for a while to avoid
+
+
+        goal_handle.succeed()
+        self.result_.message = "Mission completed successfully."
+        return self.result_
+        
+    def _cancel_cb(self, goal_handle):
+        self.get_logger().info('RunMission action canceled.')
+        self.current_state = 'ERROR'  # Transition to an error state or handle cleanup
+        goal_handle.canceled()
+        result = RunMission.Result()
+        result.message = "Mission was canceled."
+        # result.robot_feedback = "FSM was canceled."
+        return result
     
     #  ------------------------------  FINITE STATE MACHINE ------------------------------
 
-    def set_result(self, success: bool):
-        self.ret = success
-
-    def state_machine_loop(self):
+    def _check_states(self):
         if self.current_state in self.states:
             self.states[self.current_state]()
         else:
@@ -91,7 +129,7 @@ class ElevatorBehaviorManager(Node):
             else: self.current_state = 'DONE'
 
     def floor_navigation(self):
-
+        self.feedback_msg_.robot_feedback = "Navigating"
         if self.start_navigation:
             self.get_logger().info("Iniciando navegação no andar atual...")
 
@@ -177,6 +215,7 @@ class ElevatorBehaviorManager(Node):
 
 
     def wait_for_floor(self):
+        self.feedback_msg_.robot_feedback = "Waiting"
         # Aqui você pode monitorar a mudança de andar via tópico de visão
         self.get_logger().info("Se posicionando e aguardando chegada no 4º andar (via visão)...")
         # self.current_state = 'EXIT_ELEVATOR'
@@ -216,7 +255,12 @@ class ElevatorBehaviorManager(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ElevatorBehaviorManager()
-    rclpy.spin(node)
+
+    executor = rclpy.executors.MultiThreadedExecutor()
+    executor.add_node(node)
+    executor.spin()
+
+    node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
