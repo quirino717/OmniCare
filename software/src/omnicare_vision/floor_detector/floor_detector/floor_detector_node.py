@@ -32,7 +32,7 @@ class FloorDetector(Node):
         weights_dir = get_package_share_path('floor_detector') / 'weights'
 
         self.srv = self.create_service(OnOffNode,
-                                       "floor_detector/OnOffNode",
+                                       "omnicare/floor_detector/OnOffNode",
                                        self.on_off_node_callbalck)
         self.__nodeActivate = True
 
@@ -44,6 +44,14 @@ class FloorDetector(Node):
         self.floor_det_info_publisher = self.create_publisher(FloorDetectorInfo,
                                                               "floor_detector/info",
                                                               SensorDataQoS)
+                
+        self.align_to_display_publisher = self.create_publisher(String,
+                                                       "floor_detector/align_to_display",
+                                                       SensorDataQoS)
+        
+        self.debug_image = self.create_publisher(Image,
+                                                "floor_detector/debug",
+                                                SensorDataQoS)
         
         self.display_publisher = self.create_publisher(Image,
                                                        "floor_detector/elevator_display",
@@ -97,6 +105,7 @@ class FloorDetector(Node):
         self.get_logger().debug('Received an image')
         self.image_raw = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.last_header = msg.header
+
         self.detect_floor(self.image_raw.copy())
 
     def detect_floor(self, img):        
@@ -120,13 +129,56 @@ class FloorDetector(Node):
         floor_results = self.model_floor(display_img, verbose=False)[0]
 
         self.filter_floor_detection(floor_results)
-    
-    def find_display(self, img, results):    
+
+    def publish_debug_img(self,img,int_xyxy,cx,cy):
+        # Ponto central (círculo preenchido + mira)
+        cv2.circle(img, (cx, cy), 6, (0, 0, 255), -1)
+        cv2.drawMarker(img, (cx, cy), (0, 0, 255), markerType=cv2.MARKER_CROSS, markerSize=18, thickness=2)
+
+        # Bounding Box do display 
+        cv2.rectangle(img, (int_xyxy[0], int_xyxy[1]), (int_xyxy[2], int_xyxy[3]), (0, 255, 0), 2)
+        
+        # Publica imagem de debug
+        display_debug_msg = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
+        display_debug_msg.header = self.last_header
+        self.debug_image.publish(display_debug_msg)
+
+    def publish_display_ref(self,x_ref1,x_ref2,cx):
+        # Instanciando a mensagem tipo String
+        align_msg = String()
+
+        # Lógica para definir o valor da mensagem com base na posição do display
+        if   (cx > x_ref2): align_msg.data = "Right"
+        elif (cx < x_ref1): align_msg.data = "Left"
+        else: align_msg.data = "Align"
+
+        # Publicando a mensagem no tópico
+        self.align_to_display_publisher.publish(align_msg)
+        
+    def find_display(self, img, results):  
+        h, w = img.shape[:2]
+        x_ref1, x_ref2 = w//2 - 100, w//2 + 100
+  
         if len(results.boxes) == 0:
             return
     
         _ = results.boxes[0].xyxy.tolist()[0] # Get xyxy position of BoundingBox
         int_xyxy = [int(float(x)) for x in _]
+
+        # centro -> int
+        cx = int(round((int_xyxy[0] + int_xyxy[2]) / 2.0))
+        cy = int(round((int_xyxy[1] + int_xyxy[3]) / 2.0))
+
+        # limitar aos limites da imagem
+        cx = max(0, min(w - 1, cx))
+        cy = max(0, min(h - 1, cy))
+        
+        # Publica imagem de debug
+        self.publish_debug_img(img,int_xyxy,cx,cy)
+
+        # Publica a referência do display para alinhamento
+        self.publish_display_ref(x_ref1,x_ref2,cx)
+        
         return img[int_xyxy[1]:int_xyxy[3], int_xyxy[0]:int_xyxy[2]].copy() 
     
     def preprocessing_display_img(self, img, size):
