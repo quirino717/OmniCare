@@ -42,19 +42,19 @@ class FloorDetector(Node):
         self.get_logger().debug("CV Bridge initialized")
 
         self.floor_det_info_publisher = self.create_publisher(FloorDetectorInfo,
-                                                              "floor_detector/info",
+                                                              "omnicare/floor_detector/info",
                                                               SensorDataQoS)
                 
         self.align_to_display_publisher = self.create_publisher(String,
-                                                       "floor_detector/align_to_display",
+                                                       "omnicare/floor_detector/align_to_display",
                                                        SensorDataQoS)
         
         self.debug_image = self.create_publisher(Image,
-                                                "floor_detector/debug",
+                                                "omnicare/floor_detector/debug",
                                                 SensorDataQoS)
         
         self.display_publisher = self.create_publisher(Image,
-                                                       "floor_detector/elevator_display",
+                                                       "omnicare/floor_detector/elevator_display",
                                                        SensorDataQoS)
         
         self.main_callback_timer = self.create_timer(self.params.main_callback_delay_s,
