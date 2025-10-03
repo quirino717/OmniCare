@@ -47,7 +47,7 @@ class FloorDetector(Node):
                 
         self.align_to_display_publisher = self.create_publisher(String,
                                                        "omnicare/floor_detector/align_to_display",
-                                                       SensorDataQoS)
+                                                       10)
         
         self.debug_image = self.create_publisher(Image,
                                                 "omnicare/floor_detector/debug",
@@ -125,12 +125,17 @@ class FloorDetector(Node):
         
         # Model was treined with 640x640 with filled edges
         display_img = self.preprocessing_display_img(display_img, size=640)
+        
         # Classification of the elevator display
         floor_results = self.model_floor(display_img, verbose=False)[0]
 
         self.filter_floor_detection(floor_results)
 
-    def publish_debug_img(self,img,int_xyxy,cx,cy):
+    def publish_debug_img(self,img,int_xyxy,x_ref1,x_ref2,h,cx,cy):
+        # Separando a imagem em esquerda, meio e direita
+        cv2.line(img, (x_ref1, 0), (x_ref1, h), (255, 0, 0), 12)  # Linha esquerda
+        cv2.line(img, (x_ref2, 0), (x_ref2, h), (255, 0, 0), 12)  # Linha direita
+
         # Ponto central (círculo preenchido + mira)
         cv2.circle(img, (cx, cy), 6, (0, 0, 255), -1)
         cv2.drawMarker(img, (cx, cy), (0, 0, 255), markerType=cv2.MARKER_CROSS, markerSize=18, thickness=2)
@@ -174,7 +179,7 @@ class FloorDetector(Node):
         cy = max(0, min(h - 1, cy))
         
         # Publica imagem de debug
-        self.publish_debug_img(img,int_xyxy,cx,cy)
+        self.publish_debug_img(img.copy(),int_xyxy,x_ref1,x_ref2,h,cx,cy)
 
         # Publica a referência do display para alinhamento
         self.publish_display_ref(x_ref1,x_ref2,cx)

@@ -1,18 +1,17 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Bool
-from std_srvs.srv import Trigger
+from std_msgs.msg import String, Bool
+from geometry_msgs.msg import Twist
 from rclpy.action import ActionServer, ActionClient
 
-from omnicare_msgs.srv import SwitchFloor, Checkpoints, TeleportFloor
+from omnicare_msgs.srv import SwitchFloor, Checkpoints, TeleportFloor, OnOffNode
 from omnicare_msgs.action import EnterElevator, RunMission
 
 
 # from omnicare_behavior.action import EnterElevator
 from omnicare_behavior.states.floor_navigation import switch_floor, start_checkpoints, teleport_robot
-from omnicare_behavior.states.enter_elevator import enter_elevator_behavior
-from omnicare_behavior.utils.parsing_yaml import extract_map_configuration
+from omnicare_behavior.states.align_elevator import activate_display_inference, deactivate_display_inference, align_the_robot
 
 
 class ElevatorBehaviorManager(Node):
@@ -26,45 +25,35 @@ class ElevatorBehaviorManager(Node):
 
         # Define os estados e o mapa de transições
         self.states = {
-            'FLOOR_NAVIGATION': self.floor_navigation,
-            'WAITING_CHECKPOINT_GOAL': self.waiting_checkpoints,
-            'ENTER_ELEVATOR': self.enter_elevator,
-            'WAIT_ENTER_ELEVATOR': self.wait_enter_elevator,
-            'WAIT_FOR_FLOOR': self.wait_for_floor,
-            'EXIT_ELEVATOR': self.exit_elevator,
-            'ERROR': self.error
+            'FLOOR_NAVIGATION': self._floor_navigation,
+            'WAITING_CHECKPOINT_GOAL': self._waiting_checkpoints,
+            'ACTIVATE_INFERENCE': self._activate_inference,
+            'ALIGN_IN_ELEVATOR': self._align_in_elevator,
+            'WAIT_FOR_FLOOR': self._wait_for_floor,
+            'ERROR': self._error
         }
 
+        self.direction = None
 
-        # self.start_navigation = True 
-        # self.current_state = 'FLOOR_NAVIGATION'
-
-        # Subscribes
-        self.checkpoints_sub = self.create_subscription(
-            Bool,
-            '/checkpoint_done',
-            self.checkpoints_callback,
-            10
-        )
+        # Pubs
+        self.teleop_pub = self.create_publisher(Twist, '/cmd_vel', 10)
 
         # Sub to debug exit elevator
-        self.debug_sub = self.create_subscription(Bool, '/right_floor', self.debug_sub_cb, 10)       
+        self.debug_sub = self.create_subscription(Bool, '/right_floor', self._debug_sub_cb, 10)
+        self.checkpoints_sub = self.create_subscription(Bool,'/checkpoint_done',self._checkpoints_callback,10)
+        self.display_ref_sub = self.create_subscription(String, '/omnicare/floor_detector/align_to_display', self._display_ref_cb, 10)       
 
         # Service Clients
+        self.start_checkpoint = self.create_client(Checkpoints, '/omnicare/checkpoints/start')
+        self.activate_inference = self.create_client(OnOffNode, '/omnicare/floor_detector/OnOffNode')
         self.switch_floor = self.create_client(SwitchFloor, '/omnicare/navigation/switch_floor')
         self.teleport_robot = self.create_client(TeleportFloor, '/omnicare/simulation/teleport_floor')
-        self.startCheckpoint = self.create_client(Checkpoints, '/omnicare/checkpoints/start')
-
-
+        
         # Action Clients                                                
         self.enter_elevator_client = ActionClient(self, EnterElevator, '/omnicare/elevator/enter_elevator')
         self.exit_elevator_client  = ActionClient(self, EnterElevator, '/omnicare/elevator/exit_elevator')
 
 
-        # self.enter_elevator_client = ActionClient(self, EnterElevator, '/enter_elevator')
-        # self.activate_floor_client = self.create_client(Trigger, '/activate_floor_nav')
-
-        # self.timer = self.create_timer(1.0, self.state_machine_loop)
         self.feedback_msg_, self.result_ = None, None
         self.run_srv = ActionServer(self, RunMission, '/omnicare/behavior/run_mission',
                                     execute_callback=self._state_machine_loop,
@@ -92,7 +81,7 @@ class ElevatorBehaviorManager(Node):
 
             if self.current_state in ['DONE', 'ERROR']: 
                 break
-            rate.sleep()  # Sleep for a while to avoid
+            rate.sleep()  # Sleep for a while to avoid 
 
 
         goal_handle.succeed()
@@ -105,7 +94,6 @@ class ElevatorBehaviorManager(Node):
         goal_handle.canceled()
         result = RunMission.Result()
         result.message = "Mission was canceled."
-        # result.robot_feedback = "FSM was canceled."
         return result
     
     #  ------------------------------  FINITE STATE MACHINE ------------------------------
@@ -121,14 +109,14 @@ class ElevatorBehaviorManager(Node):
     #  ------------------------------  Floor Navigation State -------------------------------
 
 
-    def checkpoints_callback(self, msg):
+    def _checkpoints_callback(self, msg):
         self.get_logger().info(f"Received checkpoint done signal: {msg.data}")
         if msg.data:
             self.get_logger().info("Checkpoint atingido!")
             if self.start_navigation: self.current_state = 'WAIT_FOR_FLOOR'
             else: self.current_state = 'DONE'
 
-    def floor_navigation(self):
+    def _floor_navigation(self):
         self.feedback_msg_.robot_feedback = "Navigating"
         if self.start_navigation:
             self.get_logger().info("Iniciando navegação no andar atual...")
@@ -143,7 +131,7 @@ class ElevatorBehaviorManager(Node):
             start_checkpoints(
                 floor="simulation_quintoAndar",  # Which floor to start checkpoints
                 node=self, # Pass the current node instance
-                start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
+                start_checkpoint_client=self.start_checkpoint, # Pass the Checkpoints client instance
             )
         else:
             self.get_logger().info("Iniciando navegação no andar alvo...")
@@ -157,7 +145,7 @@ class ElevatorBehaviorManager(Node):
             start_checkpoints(
                 floor="simulation_quartoAndar",  # Which floor to start checkpoints
                 node=self, # Pass the current node instance
-                start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
+                start_checkpoint_client=self.start_checkpoint, # Pass the Checkpoints client instance
             )
 
 
@@ -167,34 +155,49 @@ class ElevatorBehaviorManager(Node):
 
     #  ------------------------------  Waiting Checkpoint State -------------------------------
 
-    def waiting_checkpoints(self):
+    def _waiting_checkpoints(self):
         # self.get_logger().info("Aguardando sinal do checkpoint...")
         pass
 
 
     #  ------------------------------  END -------------------------------
 
+    #  --------------------------  Align in Elevator State -----------------------------
+    
+    def _activate_inference(self):
+        self.get_logger().info("Ativando inferência para identificar o display...")
 
-    #  --------------------------  Enter in Elevator State -----------------------------
-
-    def enter_elevator(self):
-        self.get_logger().info('Chamando action para entrar no elevador...')
-
-        enter_elevator_behavior(
+        activate_display_inference(
             node=self,  # Pass the current node instance
-            action_client=self.enter_elevator_client  # Pass the EnterElevator action client instance,
+            activate_inference_client=self.activate_inference,  # Pass the OnOffNode action client instance,
+            simulation=self.simulation # Pass the simulation flag
         )
 
-        self.current_state = 'WAIT_ENTER_ELEVATOR'
+        self.current_state = 'ALIGN_IN_ELEVATOR'
+
+    def _display_ref_cb(self, msg):
+        self.direction = msg.data
+        if self.direction == "Align":
+            self.get_logger().info("Alinhamento com o display concluído.")
+            self.current_state = 'WAIT_FOR_FLOOR'
+        else:
+            self.get_logger().info(f"Alinhando com o display: {self.direction}")
+
+    def _align_in_elevator(self):
+        self.feedback_msg_.robot_feedback = "Aligning"
+        # self.get_logger().info("Alinhando com o display do elevador...")
+
+        align_the_robot(
+            speed_publisher=self.teleop_pub,  # Pass the cmd_vel publisher
+            direction=self.direction  # Direction to align ("Left", "Right", or None)
+        )
 
     #  ------------------------------  END -------------------------------
 
-    def wait_enter_elevator(self):
-        self.get_logger().info("Aguardando entrar no elevador...")
 
     #  --------------------------  Wait for floor State -----------------------------
 
-    def debug_sub_cb(self, msg):
+    def _debug_sub_cb(self, msg):
         if msg.data:
             if self.simulation:
                 # Teleport the robot to the correct floor in simulation
@@ -207,6 +210,9 @@ class ElevatorBehaviorManager(Node):
             else:
                 pass # In real robot, we don't teleport, we just switch the floor
 
+            # Deactivate the inference after aligning and reaching the floor
+            deactivate_display_inference(self, self.activate_inference, self.simulation)
+
             self.start_navigation = False # Flag to alert the navigation is already started
             self.get_logger().info("Debug: Chegou no andar correto!")
             self.current_state = 'FLOOR_NAVIGATION'
@@ -214,7 +220,7 @@ class ElevatorBehaviorManager(Node):
             self.get_logger().info("Debug: Ainda não chegou no andar correto.")
 
 
-    def wait_for_floor(self):
+    def _wait_for_floor(self):
         self.feedback_msg_.robot_feedback = "Waiting"
         # Aqui você pode monitorar a mudança de andar via tópico de visão
         self.get_logger().info("Se posicionando e aguardando chegada no 4º andar (via visão)...")
@@ -223,29 +229,7 @@ class ElevatorBehaviorManager(Node):
 
     #  ------------------------------  END -------------------------------
 
-    #  --------------------------  Exit Elevator State -----------------------------
-
-    def exit_elevator(self):
-        self.get_logger().info("Executando saída do elevador (action)...")
-        # switch_floor(
-        #     floor=4,  # Which floor to start navigation
-        #     node=self, # Pass the current node instance
-        #     switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
-        #     simulation=self.simulation # Pass the simulation flag
-        # )
-
-        # start_checkpoints(
-        #     floor="simulation_exit",  # Which floor to start checkpoints
-        #     node=self, # Pass the current node instance
-        #     start_checkpoint_client=self.startCheckpoint, # Pass the Checkpoints client instance
-        # )
-
-        # Você pode fazer igual ao `enter_elevator`
-        # self.current_state = 'FLOOR_NAVIGATION'
-
-    #  ------------------------------  END -------------------------------
-
-    def error(self):
+    def _error(self):
         self.get_logger().info("Error! Please check the logs for more details.")
 
 
