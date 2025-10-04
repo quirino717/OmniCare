@@ -1,10 +1,13 @@
+import re
 import rclpy
 from rclpy.node import Node
+
 
 from std_msgs.msg import String, Bool
 from geometry_msgs.msg import Twist
 from rclpy.action import ActionServer, ActionClient
 
+from omnicare_msgs.msg import FloorDetectorInfo
 from omnicare_msgs.srv import SwitchFloor, Checkpoints, TeleportFloor, OnOffNode
 from omnicare_msgs.action import EnterElevator, RunMission
 
@@ -19,10 +22,6 @@ class ElevatorBehaviorManager(Node):
     def __init__(self):
         super().__init__('elevator_behavior_manager')
 
-        self.simulation = self.declare_parameter('simulation',True).get_parameter_value().bool_value
-        self.actual_floor = self.declare_parameter('actual_floor', 5).get_parameter_value().integer_value
-        self.target_floor = self.declare_parameter('target_floor', 4).get_parameter_value().integer_value
-
         # Define os estados e o mapa de transições
         self.states = {
             'FLOOR_NAVIGATION': self._floor_navigation,
@@ -33,15 +32,21 @@ class ElevatorBehaviorManager(Node):
             'ERROR': self._error
         }
 
-        self.direction = None
+        # Compila a regex para extrair números do final da string do andar
+        self.regex = re.compile(r'(-?\d+)$')
+
 
         # Pubs
         self.teleop_pub = self.create_publisher(Twist, '/cmd_vel', 10)
 
+
         # Sub to debug exit elevator
+        self.direction = None
         self.debug_sub = self.create_subscription(Bool, '/right_floor', self._debug_sub_cb, 10)
         self.checkpoints_sub = self.create_subscription(Bool,'/checkpoint_done',self._checkpoints_callback,10)
-        self.display_ref_sub = self.create_subscription(String, '/omnicare/floor_detector/align_to_display', self._display_ref_cb, 10)       
+        self.display_ref_sub = self.create_subscription(String, '/omnicare/floor_detector/align_to_display', self._display_ref_cb, 10)
+        self.display_detection_sub = self.create_subscription(FloorDetectorInfo, '/omnicare/floor_detector/info', self._display_detection_cb, 10)
+
 
         # Service Clients
         self.start_checkpoint = self.create_client(Checkpoints, '/omnicare/checkpoints/start')
@@ -53,12 +58,15 @@ class ElevatorBehaviorManager(Node):
         self.enter_elevator_client = ActionClient(self, EnterElevator, '/omnicare/elevator/enter_elevator')
         self.exit_elevator_client  = ActionClient(self, EnterElevator, '/omnicare/elevator/exit_elevator')
 
-
-        self.feedback_msg_, self.result_ = None, None
+        # Action Server
+        self.goal_,self.feedback_msg_, self.result_ = None, None, None
+        self.simulation, self.actual_floor, self.target_floor = None, None, None
         self.run_srv = ActionServer(self, RunMission, '/omnicare/behavior/run_mission',
                                     execute_callback=self._state_machine_loop,
                                     cancel_callback=self._cancel_cb)
-        self.goal_handle_ = None
+        
+        self.get_logger().info("Elevator Behavior Manager Node has been started.")
+        self.get_logger().info("Waiting for a mission...")
 
 
     #  ------------------------------  ACTION SERVER ------------------------------
@@ -66,13 +74,19 @@ class ElevatorBehaviorManager(Node):
         self.get_logger().info('RunMission action started.')
         self.ret = False
 
-        self.feedback_msg_ = RunMission.Feedback()
+        # Initialize goal, feedback, and result
+        self.goal_ = goal_handle.request
         self.result_ = RunMission.Result()
-
+        self.feedback_msg_ = RunMission.Feedback()
         
         # Reset state machine
         self.current_state = 'FLOOR_NAVIGATION'
         self.start_navigation = True
+
+        # Get parameters from the goal
+        self.simulation = self.goal_.simulation
+        self.actual_floor = self.goal_.initial
+        self.target_floor = self.goal_.target
 
         rate = self.create_rate(10) #10 Hz
         while rclpy.ok():
@@ -202,13 +216,10 @@ class ElevatorBehaviorManager(Node):
             if self.simulation:
                 # Teleport the robot to the correct floor in simulation
                 teleport_robot( 
-                    floor=4,  # Which floor to teleport
+                    floor=self.target_floor,  # Which floor to teleport
                     node=self, # Pass the current node instance
                     teleport_robot_client=self.teleport_robot # Pass the TeleportFloor client instance
                 )
-
-            else:
-                pass # In real robot, we don't teleport, we just switch the floor
 
             # Deactivate the inference after aligning and reaching the floor
             deactivate_display_inference(self, self.activate_inference, self.simulation)
@@ -220,6 +231,29 @@ class ElevatorBehaviorManager(Node):
             self.get_logger().info("Debug: Ainda não chegou no andar correto.")
 
 
+    def _display_detection_cb(self, msg):
+        if msg.floor_name is None or msg.floor_name == "":
+            return
+        
+        floor_filtred = self.regex.search(msg.floor_name)
+        if floor_filtred.group(1) == self.target_floor:
+            if self.simulation:
+                # Teleport the robot to the correct floor in simulation
+                teleport_robot( 
+                    floor=self.target_floor,  # Which floor to teleport
+                    node=self, # Pass the current node instance
+                    teleport_robot_client=self.teleport_robot # Pass the TeleportFloor client instance
+                )
+
+            # Deactivate the inference after aligning and reaching the floor
+            deactivate_display_inference(self, self.activate_inference, self.simulation)
+
+            self.start_navigation = False # Flag to alert the navigation is already started
+            self.get_logger().info("Detecção: Chegou no andar correto!")
+            self.current_state = 'FLOOR_NAVIGATION'
+
+        self.get_logger().info(f"Detecção: Andar atual {int(floor_filtred.group(1))}, Alvo {self.target_floor}.")
+   
     def _wait_for_floor(self):
         self.feedback_msg_.robot_feedback = "Waiting"
         # Aqui você pode monitorar a mudança de andar via tópico de visão
