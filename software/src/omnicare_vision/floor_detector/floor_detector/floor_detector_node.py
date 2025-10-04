@@ -43,7 +43,7 @@ class FloorDetector(Node):
 
         self.floor_det_info_publisher = self.create_publisher(FloorDetectorInfo,
                                                               "omnicare/floor_detector/info",
-                                                              SensorDataQoS)
+                                                              10)
                 
         self.align_to_display_publisher = self.create_publisher(String,
                                                        "omnicare/floor_detector/align_to_display",
