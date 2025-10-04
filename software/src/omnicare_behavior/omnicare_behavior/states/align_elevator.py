@@ -1,6 +1,7 @@
 import rclpy
 
-from geometry_msgs.msg import Twist
+from std_msgs.msg import  Bool
+from geometry_msgs.msg import Twist 
 from omnicare_msgs.srv import OnOffNode 
 
 def align_the_robot(speed_publisher, direction):
@@ -65,7 +66,7 @@ def deactivate_display_inference(node, activate_inference_client,simulation):
     """
     
     inference_request = OnOffNode.Request()
-    inference_request.activate = ''
+    inference_request.activate = Bool().data
 
     if not activate_inference_client.wait_for_service(timeout_sec=5.0):
         node.get_logger().error("Serviço de desativação da inferência não está disponível.")
