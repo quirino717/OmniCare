@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="FEI">
+
+    <!-- <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>0 0 40 0 1.57 0</pose>
+      </camera>
+    </gui> -->
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- maps -->
+
+    <model name="quinto_andar">
+      <static>true</static>
+      <pose>-2.540289 -2.030616 0 0 0 0</pose> <!-- x y z roll pitch yaw -->
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quintoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quintoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="quarto_andar">
+      <static>true</static>
+      <pose>4.336509 6.076185 0 0 0 -3.126995</pose> <!-- x y z roll pitch yaw -->
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quartoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>file:///home/llagoeiro/FEI/TCC/OmniCare/software/src/omnicare_simulation/simulation/stl/quartoAndar.stl</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/gazebo</namespace>
+      </ros>
+      <update_rate>1.0</update_rate>
+    </plugin>
+
+  </world>
+</sdf>
