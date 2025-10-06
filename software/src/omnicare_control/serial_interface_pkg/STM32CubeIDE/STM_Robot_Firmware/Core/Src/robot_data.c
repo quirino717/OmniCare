@@ -219,7 +219,7 @@ void motor_pid_control_thread_entry(unsigned long thread_input)
 
 
 
-const int ENCODERS_DIRECTION[] = {-1, -1, 1};
+const int ENCODERS_DIRECTION[] = {1, 1, 1};
 
 void init_encoders()
 {
