@@ -1,0 +1,11 @@
+# Request
+bool simulation
+string initial
+string target
+---
+# Result
+bool success
+string message
+---
+# Feedback
+string robot_feedback
