@@ -1,10 +1,12 @@
 import re
+import time
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
 
 
 from std_msgs.msg import String, Bool
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
 from rclpy.action import ActionServer, ActionClient
 
 from omnicare_msgs.msg import FloorDetectorInfo
@@ -13,6 +15,7 @@ from omnicare_msgs.action import EnterElevator, RunMission
 
 
 # from omnicare_behavior.action import EnterElevator
+from omnicare_behavior.utils.watchdog import Watchdog
 from omnicare_behavior.states.floor_navigation import switch_floor, start_checkpoints, teleport_robot
 from omnicare_behavior.states.align_elevator import activate_display_inference, deactivate_display_inference, align_the_robot
 
@@ -29,21 +32,25 @@ class ElevatorBehaviorManager(Node):
             'ACTIVATE_INFERENCE': self._activate_inference,
             'ALIGN_IN_ELEVATOR': self._align_in_elevator,
             'WAIT_FOR_FLOOR': self._wait_for_floor,
+            'DONE': self._done,
             'ERROR': self._error
         }
+
 
         # Compila a regex para extrair números do final da string do andar
         self.regex = re.compile(r'(-?\d+)$')
 
+        #Variables
+        self.direction,self.last_amcl_time, self.start_time, self.actual_time = None, None, None, None
+        self.linear, self.angular, self.l_x, self.l_y, self.a_z = None, None, 0.0, 0.0, 0.0
+        self.detect_counter = 0
 
         # Pubs
         self.teleop_pub = self.create_publisher(Twist, '/cmd_vel', 10)
 
-
-        # Sub to debug exit elevator
-        self.direction = None
-        self.debug_sub = self.create_subscription(Bool, '/right_floor', self._debug_sub_cb, 10)
+        # Subs
         self.checkpoints_sub = self.create_subscription(Bool,'/checkpoint_done',self._checkpoints_callback,10)
+        self.cmd_vel_sub = self.create_subscription(Twist,'/cmd_vel',self._cmd_vel_sub_cb,10)
         self.display_ref_sub = self.create_subscription(String, '/omnicare/floor_detector/align_to_display', self._display_ref_cb, 10)
         self.display_detection_sub = self.create_subscription(FloorDetectorInfo, '/omnicare/floor_detector/info', self._display_detection_cb, 10)
 
@@ -72,7 +79,14 @@ class ElevatorBehaviorManager(Node):
     #  ------------------------------  ACTION SERVER ------------------------------
     async def _state_machine_loop(self, goal_handle):
         self.get_logger().info('RunMission action started.')
-        self.ret = False
+
+        # Instanciando o Watchdog
+        self.watchdog = Watchdog(
+            node=self,
+            timeout_sec=10.0,
+            check_period_sec=0.2,
+            on_timeout=self._on_watchdog_timeout
+        )
 
         # Initialize goal, feedback, and result
         self.goal_ = goal_handle.request
@@ -88,6 +102,7 @@ class ElevatorBehaviorManager(Node):
         self.actual_floor = self.goal_.initial
         self.target_floor = self.goal_.target
 
+        self.get_logger().info(f"Mission received: from {self.actual_floor} to {self.target_floor} | Simulation: {self.simulation}")
         rate = self.create_rate(10) #10 Hz
         while rclpy.ok():
             self._check_states()
@@ -97,6 +112,8 @@ class ElevatorBehaviorManager(Node):
                 break
             rate.sleep()  # Sleep for a while to avoid 
 
+        # Cleanup o watchdog
+        self.watchdog.cancel()
 
         goal_handle.succeed()
         self.result_.message = "Mission completed successfully."
@@ -121,14 +138,6 @@ class ElevatorBehaviorManager(Node):
 
     
     #  ------------------------------  Floor Navigation State -------------------------------
-
-
-    def _checkpoints_callback(self, msg):
-        self.get_logger().info(f"Received checkpoint done signal: {msg.data}")
-        if msg.data:
-            self.get_logger().info("Checkpoint atingido!")
-            if self.start_navigation: self.current_state = 'WAIT_FOR_FLOOR'
-            else: self.current_state = 'DONE'
 
     def _floor_navigation(self):
         self.feedback_msg_.robot_feedback = "Navigating"
@@ -162,6 +171,8 @@ class ElevatorBehaviorManager(Node):
                 start_checkpoint_client=self.start_checkpoint, # Pass the Checkpoints client instance
             )
 
+        # Watchdog keep-alive
+        self.watchdog.keep_alive()
 
         self.current_state = 'WAITING_CHECKPOINT_GOAL'
     
@@ -169,14 +180,37 @@ class ElevatorBehaviorManager(Node):
 
     #  ------------------------------  Waiting Checkpoint State -------------------------------
 
-    def _waiting_checkpoints(self):
-        # self.get_logger().info("Aguardando sinal do checkpoint...")
-        pass
+    def _checkpoints_callback(self, msg):
+        self.get_logger().info(f"Received checkpoint done signal: {msg.data}")
+        if msg.data:
+            self.get_logger().info("Checkpoint atingido!")
+            if self.start_navigation: self.current_state = 'ACTIVATE_INFERENCE'
+            else: self.current_state = 'DONE'
+    
+    def _cmd_vel_sub_cb(self, msg):
+        self.linear = msg.linear
+        self.angular = msg.angular
 
+        self.l_x, self.l_y = self.linear.x, self.linear.y
+        self.a_z = self.angular.z
+
+    def _waiting_checkpoints(self):
+        self.get_logger().info("Aguardando sinal do checkpoint...")
+        self.feedback_msg_.robot_feedback = "Waiting-checkpoints"
+
+        if self.l_x == 0.0 and self.l_y == 0.0 and self.a_z == 0.0:
+            self.get_logger().info("Robot stopped")
+            pass
+        else:
+            self.get_logger().info("Watchdog keep alive")
+            # Watchdog keep-alive
+            self.watchdog.keep_alive()
+
+        pass
 
     #  ------------------------------  END -------------------------------
 
-    #  --------------------------  Align in Elevator State -----------------------------
+    #  --------------------------  Activate Inference State -----------------------------
     
     def _activate_inference(self):
         self.get_logger().info("Ativando inferência para identificar o display...")
@@ -187,56 +221,77 @@ class ElevatorBehaviorManager(Node):
             simulation=self.simulation # Pass the simulation flag
         )
 
+        # Watchdog keep-alive
+        self.watchdog.keep_alive()
+
         self.current_state = 'ALIGN_IN_ELEVATOR'
+
+
+
+    #  --------------------------  Align in Elevator State -----------------------------
 
     def _display_ref_cb(self, msg):
         self.direction = msg.data
+
+        # Safety verifications to not crash the node
+        if self.direction is None:
+            return
+
+        # Only process alignment if we are in the ALIGN_IN_ELEVATOR state
+        if self.current_state != 'ALIGN_IN_ELEVATOR':
+            return
+        
+        # If the direction is "Align", it means the robot is aligned with the display
         if self.direction == "Align":
             self.get_logger().info("Alinhamento com o display concluído.")
             self.current_state = 'WAIT_FOR_FLOOR'
-        else:
-            self.get_logger().info(f"Alinhando com o display: {self.direction}")
+            
+        self.get_logger().info(f"Alinhando com o display: {self.direction}")
 
-    def _align_in_elevator(self):
+    def _align_in_elevator(self):        
         self.feedback_msg_.robot_feedback = "Aligning"
-        # self.get_logger().info("Alinhando com o display do elevador...")
 
         align_the_robot(
             speed_publisher=self.teleop_pub,  # Pass the cmd_vel publisher
             direction=self.direction  # Direction to align ("Left", "Right", or None)
         )
 
+        # Watchdog keep-alive
+        self.watchdog.keep_alive()
+
+
     #  ------------------------------  END -------------------------------
 
 
     #  --------------------------  Wait for floor State -----------------------------
 
-    def _debug_sub_cb(self, msg):
-        if msg.data:
-            if self.simulation:
-                # Teleport the robot to the correct floor in simulation
-                teleport_robot( 
-                    floor=self.target_floor,  # Which floor to teleport
-                    node=self, # Pass the current node instance
-                    teleport_robot_client=self.teleport_robot # Pass the TeleportFloor client instance
-                )
-
-            # Deactivate the inference after aligning and reaching the floor
-            deactivate_display_inference(self, self.activate_inference, self.simulation)
-
-            self.start_navigation = False # Flag to alert the navigation is already started
-            self.get_logger().info("Debug: Chegou no andar correto!")
-            self.current_state = 'FLOOR_NAVIGATION'
-        else:
-            self.get_logger().info("Debug: Ainda não chegou no andar correto.")
-
-
     def _display_detection_cb(self, msg):
-        if msg.floor_name is None or msg.floor_name == "":
+        self.get_logger().info(f"msg: {msg.floor_name}" )
+
+        # Safety verifications to not crash the node
+        if msg.floor_name is None or msg.floor_name == '':
+            return
+
+        # Only process floor detection if we are in the WAIT_FOR_FLOOR state
+        if self.current_state != 'WAIT_FOR_FLOOR':
             return
         
+        # Extract the floor number using regex
         floor_filtred = self.regex.search(msg.floor_name)
+
+        # More verifications....
+        if floor_filtred is None:
+            return
+
+        # If the detected floor matches the target floor, increment the counter
         if floor_filtred.group(1) == self.target_floor:
+            self.detect_counter += 1
+            
+
+        # If the detected floor matches the target floor consistently, consider it confirmed
+        if self.detect_counter >= 20 and self.start_navigation:
+            self.detect_counter = 0  # Reset the counter
+
             if self.simulation:
                 # Teleport the robot to the correct floor in simulation
                 teleport_robot( 
@@ -249,26 +304,75 @@ class ElevatorBehaviorManager(Node):
             deactivate_display_inference(self, self.activate_inference, self.simulation)
 
             self.start_navigation = False # Flag to alert the navigation is already started
-            self.get_logger().info("Detecção: Chegou no andar correto!")
             self.current_state = 'FLOOR_NAVIGATION'
 
+            # Watchdog keep-alive
+            self.watchdog.keep_alive()
+
+            self.get_logger().info("Detecção: Chegou no andar correto!")
+
+        # If the robot for any reason entered in the condition above but does not switch the map and start
+        # the navigation on the target floor, the watchdog will timeout and in the timeout cb it will threat this situation
+        if not self.start_navigation:
+            # Watchdog keep-alive
+            self.watchdog.keep_alive()
+
         self.get_logger().info(f"Detecção: Andar atual {int(floor_filtred.group(1))}, Alvo {self.target_floor}.")
+
+
    
     def _wait_for_floor(self):
         self.feedback_msg_.robot_feedback = "Waiting"
+        
+        if (self.simulation):
+            # Watchdog keep-alive
+            self.watchdog.keep_alive()
+
         # Aqui você pode monitorar a mudança de andar via tópico de visão
         self.get_logger().info("Se posicionando e aguardando chegada no 4º andar (via visão)...")
-        # self.current_state = 'EXIT_ELEVATOR'
 
 
     #  ------------------------------  END -------------------------------
 
+    #  --------------------------  Done State -------------------------------
+
+    def _done(self):
+        self.get_logger().info('Mission finished.')
+
+    # ------------------------------  END -------------------------------
+
+    #  --------------------------  Error State -------------------------------
+
     def _error(self):
         self.get_logger().info("Error! Please check the logs for more details.")
 
+    # ------------------------------  END -------------------------------
 
-    # def done(self):
-    #     self.get_logger().info('FSM finalizada.')
+    #  --------------------  Watchdog Timeout Handler -------------------------------
+
+    def _on_watchdog_timeout(self):
+        self.get_logger().error("Watchdog timeout! No state activity detected.")
+        self.get_logger().info(f"Current state during timeout: {self.current_state}")
+        if self.current_state == "WAITING_CHECKPOINT_GOAL":
+            # Reinicia o watchdog
+            self.watchdog.keep_alive()
+            # Reinicia a navegação
+            self.current_state = 'FLOOR_NAVIGATION'
+            self.get_logger().info("Reiniciando navegação devido ao timeout no estado de espera de checkpoints.")
+
+        elif self.current_state == "WAIT_FOR_FLOOR":
+            # Reinicia o watchdog
+            self.watchdog.keep_alive()
+            # Setando a variavel que possivelmente esta travando o sistema de entrar na condição de navegação
+            self.start_navigation = True
+            self.get_logger().info("Timeout no estado de espera de andar.")
+
+
+        else:
+            self.current_state = 'ERROR'
+
+    # ------------------------------  END -------------------------------
+
 
 def main(args=None):
     rclpy.init(args=args)
