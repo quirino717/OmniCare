@@ -65,8 +65,6 @@ class checkpointsService(Node):
 
         self.get_logger().info(f'INI: I heard posX: "{self.p_x}", posY: {self.p_y}')
 
-        
-    
     def tf_callback(self, msg):
         tf_p = msg.pose.position
 
@@ -91,9 +89,6 @@ class checkpointsService(Node):
         self.q_y = mcl_q.y
         self.q_z = mcl_q.z
         self.q_w = mcl_q.w
-
-
-        self.get_logger().info(f'AMCL: I heard posX: "{self.p_x}", posY: {self.p_y}')
 
     def save_callback(self, request, response):
 
@@ -229,6 +224,7 @@ class checkpointsService(Node):
         
     def _get_result_cb(self, future):
         result = future.result().result
+        self.get_logger().info(f"Follow Waypoints result: {result.missed_waypoints}")
         if len(result.missed_waypoints) == 0:
             self.get_logger().info("Follow Waypoints completed successfully!")
             self.result_pub.publish(Bool(data=True))

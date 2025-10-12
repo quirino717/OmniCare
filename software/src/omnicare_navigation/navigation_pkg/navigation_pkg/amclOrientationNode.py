@@ -5,6 +5,12 @@ from rclpy.node import Node
 
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from std_msgs.msg import Float64MultiArray
+import numpy as np
+
+# Patch para corrigir bibliotecas antigas que usam np.float
+if not hasattr(np, 'float'):
+    np.float = float
+
 from tf_transformations import euler_from_quaternion
 
 class AMCLOrientationNode(Node):

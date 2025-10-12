@@ -186,7 +186,27 @@ def generate_launch_description():
         parameters=[os.path.join(get_package_share_path('navigation_pkg'), 'config/nav/ekf.yaml'), {'use_sim_time': LaunchConfiguration('use_sim_time')}]
     )
 
-        
+    # Vision launch 
+
+    camera_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('usb_cam'),
+                'launch',
+                'camera.launch.py'
+            )
+        ),
+    )
+
+    floor_detector_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('floor_detector'),
+                'launch',
+                'floor_detector.launch.py'
+            )
+        ),
+    )
 
 
     
@@ -207,6 +227,7 @@ def generate_launch_description():
         start_controller_after_rsp, #ROS2_CONTROL
         omni_base_controller_event_handler, #ROS2_CONTROL
         joint_state_broadcaster_event_handler, #ROS2_CONTROL
-        robot_localization_node #EKF + Publish Odom frame to transform
-
+        robot_localization_node, #EKF + Publish Odom frame to transform
+        camera_launch,
+        floor_detector_launch
     ])

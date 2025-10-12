@@ -2,8 +2,15 @@ import rclpy
 from rclpy.node import Node
 from nav2_msgs.srv import LoadMap, ClearEntireCostmap
 from std_srvs.srv import Empty
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import Pose, PoseWithCovarianceStamped
 from omnicare_msgs.srv import SwitchFloor  
+
+# Patch para corrigir bibliotecas antigas que usam np.float
+import numpy as np
+if not hasattr(np, 'float'):
+    np.float = float
+import tf_transformations 
+
 import math
 import time
 
@@ -44,7 +51,7 @@ class SwitchFloorService(Node):
 
         self.srv = self.create_service(SwitchFloor, '/omnicare/navigation/switch_floor', self.callback)
         self.get_logger().info('Serviço /switch_floor pronto!')
-
+    
     def callback(self, request, response):
         map_loader = MapLoader()
         map_loader.send_request(request.map_path)
@@ -67,11 +74,11 @@ class SwitchFloorService(Node):
         msg.header.frame_id = 'map'
         msg.header.stamp = self.get_clock().now().to_msg()
 
-        msg.pose.pose.position.x = request.x
-        msg.pose.pose.position.y = request.y
+        msg.pose.pose.position.x = request.pose.position.x
+        msg.pose.pose.position.y = request.pose.position.y
         msg.pose.pose.orientation.z = math.sin(request.yaw / 2.0)
         msg.pose.pose.orientation.w = math.cos(request.yaw / 2.0)
-
+        
         msg.pose.covariance[0] = 0.25
         msg.pose.covariance[7] = 0.25
         msg.pose.covariance[35] = 0.0685
@@ -80,7 +87,7 @@ class SwitchFloorService(Node):
 
 
 
-        self.get_logger().info(f'Mapa trocado e pose setada: ({request.x}, {request.y}, yaw={request.yaw})')
+        self.get_logger().info(f'Mapa trocado e pose setada: ({request.pose.position.x}, {request.pose.position.y})')
         response.success = True
         response.message = 'Mapa trocado e pose publicada com sucesso!'
 

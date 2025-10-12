@@ -33,7 +33,7 @@ def generate_launch_description():
     simulation = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([get_package_share_directory('omnicare_simulation'), '/launch/simulation.launch.py']),
            launch_arguments={
-                'world_path': [get_package_share_directory('omnicare_simulation'), '/simulation/worlds/simple_room_with_fixed_boxes.world'],
+                'world_path': [get_package_share_directory('omnicare_simulation'), '/simulation/worlds/FEI.world'],
             }.items(),
             condition=IfCondition(LaunchConfiguration('use_sim_time'))
     )
@@ -46,7 +46,7 @@ def generate_launch_description():
     load_sim_robot = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([get_package_share_directory('omnicare_bringup'),'/launch/load_sim_robot.launch.py']),
         launch_arguments={
-            'rvizconfig': [get_package_share_directory('navigation_pkg'), '/config/rviz/navigation.rviz'],
+            'rvizconfig': [get_package_share_directory('navigation_pkg'), '/config/rviz/robot.rviz'],
         }.items(),
         condition=IfCondition(LaunchConfiguration('use_sim_time'))
     )
@@ -131,6 +131,13 @@ def generate_launch_description():
         }]
     )
 
+    behaviorManager = Node(
+        package='omnicare_behavior',
+        executable='behavior_manager',
+        name='behavior_manager',
+    )
+
+
 
 # -----------------------------------------------------
 
@@ -149,5 +156,6 @@ def generate_launch_description():
     # ld.add_action(enterElevator)
     ld.add_action(teleportRobot)
     ld.add_action(poseFromTF)
+    # ld.add_action(behaviorManager)
 
     return ld

@@ -1,6 +1,5 @@
 string map_path
-float64 x
-float64 y
+geometry_msgs/Pose pose
 float64 yaw
 ---
 bool success
