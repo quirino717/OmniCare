@@ -133,8 +133,8 @@ class FloorDetector(Node):
 
     def publish_debug_img(self,img,int_xyxy,x_ref1,x_ref2,h,cx,cy):
         # Separando a imagem em esquerda, meio e direita
-        cv2.line(img, (x_ref1, 0), (x_ref1, h), (255, 0, 0), 12)  # Linha esquerda
-        cv2.line(img, (x_ref2, 0), (x_ref2, h), (255, 0, 0), 12)  # Linha direita
+        cv2.line(img, (x_ref1, 0), (x_ref1, h), (255, 0, 0), 8)  # Linha esquerda
+        cv2.line(img, (x_ref2, 0), (x_ref2, h), (255, 0, 0), 8)  # Linha direita
 
         # Ponto central (círculo preenchido + mira)
         cv2.circle(img, (cx, cy), 6, (0, 0, 255), -1)
