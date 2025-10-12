@@ -19,13 +19,13 @@ def extract_map_configuration(in_simulation):
     # Adiciona o prefixo do pacote nos caminhos
     for floor_dict in [maps_config["real"], maps_config["sim"]]:
         for floor, data in floor_dict.items():
-            data["map_path"] = os.path.join(
-                get_package_share_directory('navigation_pkg'),
-                data["map_path"]
-            )
+            data["map_path"] = os.path.join(get_package_share_directory('navigation_pkg'),data["map_path"])
             
+    # Verificação se a variavel passada não for booleana, seta como False 
+    if in_simulation not in [True, False]:
+        in_simulation = False
+
     # Acesso aos dicionários
     floor_map = maps_config["sim"] if in_simulation else maps_config["real"]
 
     return floor_map
-
