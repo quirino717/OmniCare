@@ -40,7 +40,7 @@ class ElevatorBehaviorManager(Node):
         # Compila a regex para extrair números do final da string do andar
         self.regex = re.compile(r'(-?\d+)$')
 
-        #Variables
+        # Variables
         self.direction,self.last_amcl_time, self.start_time, self.actual_time = None, None, None, None
         self.linear, self.angular, self.l_x, self.l_y, self.a_z = None, None, 0.0, 0.0, 0.0
         self.detect_counter = 0
@@ -152,9 +152,10 @@ class ElevatorBehaviorManager(Node):
             )
                         
             start_checkpoints(
-                floor="simulation_quintoAndar",  # Which floor to start checkpoints
+                floor=self.actual_floor,  # Which floor to start checkpoints
                 node=self, # Pass the current node instance
                 start_checkpoint_client=self.start_checkpoint, # Pass the Checkpoints client instance
+                simulation=self.simulation # Pass the simulation flag
             )
         else:
             self.get_logger().info("Iniciando navegação no andar alvo...")
@@ -166,9 +167,10 @@ class ElevatorBehaviorManager(Node):
             )
                         
             start_checkpoints(
-                floor="simulation_quartoAndar",  # Which floor to start checkpoints
+                floor=self.target_floor,  # Which floor to start checkpoints
                 node=self, # Pass the current node instance
                 start_checkpoint_client=self.start_checkpoint, # Pass the Checkpoints client instance
+                simulation=self.simulation # Pass the simulation flag
             )
 
         # Watchdog keep-alive
@@ -181,6 +183,15 @@ class ElevatorBehaviorManager(Node):
     #  ------------------------------  Waiting Checkpoint State -------------------------------
 
     def _checkpoints_callback(self, msg):
+        # Safety verifications to not crash the node
+        if msg.data is None:
+            return
+        
+        # Only process checkpoint done if we are in the WAITING_CHECKPOINT_GOAL state
+        if self.current_state != 'WAITING_CHECKPOINT_GOAL':
+            return
+        
+        # If a checkpoint is done, transition to the next state
         self.get_logger().info(f"Received checkpoint done signal: {msg.data}")
         if msg.data:
             self.get_logger().info("Checkpoint atingido!")
@@ -194,11 +205,14 @@ class ElevatorBehaviorManager(Node):
         self.l_x, self.l_y = self.linear.x, self.linear.y
         self.a_z = self.angular.z
 
+    def _is_robot_stopped(self):
+        return self.l_x == 0.0 and self.l_y == 0.0 and self.a_z == 0.0
+
     def _waiting_checkpoints(self):
         self.get_logger().info("Aguardando sinal do checkpoint...")
         self.feedback_msg_.robot_feedback = "Waiting-checkpoints"
 
-        if self.l_x == 0.0 and self.l_y == 0.0 and self.a_z == 0.0:
+        if self._is_robot_stopped():
             self.get_logger().info("Robot stopped")
             pass
         else:
@@ -214,6 +228,7 @@ class ElevatorBehaviorManager(Node):
     
     def _activate_inference(self):
         self.get_logger().info("Ativando inferência para identificar o display...")
+        self.feedback_msg_.robot_feedback = "Activating-inference"
 
         activate_display_inference(
             node=self,  # Pass the current node instance
@@ -249,7 +264,7 @@ class ElevatorBehaviorManager(Node):
         self.get_logger().info(f"Alinhando com o display: {self.direction}")
 
     def _align_in_elevator(self):        
-        self.feedback_msg_.robot_feedback = "Aligning"
+        self.feedback_msg_.robot_feedback = "Aligning-in-elevator"
 
         align_the_robot(
             speed_publisher=self.teleop_pub,  # Pass the cmd_vel publisher
@@ -276,7 +291,7 @@ class ElevatorBehaviorManager(Node):
         if self.current_state != 'WAIT_FOR_FLOOR':
             return
         
-        # Extract the floor number using regex
+        # Extract the floor number using regex (possible this regex can recuse floors like andar_t)
         floor_filtred = self.regex.search(msg.floor_name)
 
         # More verifications....
@@ -322,7 +337,7 @@ class ElevatorBehaviorManager(Node):
 
    
     def _wait_for_floor(self):
-        self.feedback_msg_.robot_feedback = "Waiting"
+        self.feedback_msg_.robot_feedback = "Waiting-floor"
         
         if (self.simulation):
             # Watchdog keep-alive
@@ -337,6 +352,7 @@ class ElevatorBehaviorManager(Node):
     #  --------------------------  Done State -------------------------------
 
     def _done(self):
+        self.feedback_msg_.robot_feedback = "Done"
         self.get_logger().info('Mission finished.')
 
     # ------------------------------  END -------------------------------
@@ -344,7 +360,9 @@ class ElevatorBehaviorManager(Node):
     #  --------------------------  Error State -------------------------------
 
     def _error(self):
-        self.get_logger().info("Error! Please check the logs for more details.")
+        self.feedback_msg_.robot_feedback = "Error"
+        self.get_logger().error("Mission encountered an error.")
+        self.get_logger().error("Please check the logs for more details.")
 
     # ------------------------------  END -------------------------------
 

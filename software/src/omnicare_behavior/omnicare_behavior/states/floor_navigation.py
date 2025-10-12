@@ -27,7 +27,6 @@ def switch_floor(floor: int, node, switch_floor_client,simulation):
     """
     
     floor_map = extract_map_configuration(simulation)
-
     if floor not in floor_map:
         node.get_logger().warn(f"Andar {floor} não mapeado.")
         return False
@@ -35,10 +34,12 @@ def switch_floor(floor: int, node, switch_floor_client,simulation):
     config = floor_map[floor]
     req = SwitchFloor.Request()
     req.map_path = config['map_path']
-    req.x = config['x']
-    req.y = config['y']
-    req.yaw = config['yaw']
+    req.pose.position.x = config['position']['x']
+    req.pose.position.y = config['position']['y']
+    req.yaw = config['orientation']['yaw']
 
+
+    node.get_logger().info(f"Configuração do andar {floor}: {config} com o req {req}")
     node.get_logger().info(f"Trocando para o andar {floor} com mapa {req.map_path}...")
 
     if not switch_floor_client.wait_for_service(timeout_sec=5.0):
@@ -60,14 +61,9 @@ def switch_floor(floor: int, node, switch_floor_client,simulation):
             node.get_logger().error(f"Erro na chamada do serviço SwitchFloor: {e}")
             node.current_state = 'ERROR'
 
-    # print(switched_map)
-    # if not switched_map:
-    #     node.get_logger().error("Timeout aguardando resposta do SwitchFloor.")
-    #     return False
-    # else:
     future.add_done_callback(response_callback)
 
-def start_checkpoints(floor: str, node, start_checkpoint_client):
+def start_checkpoints(floor: int, node, start_checkpoint_client, simulation):
     """
     Inicia o serviço de seguir os checkpoints.
 
@@ -76,9 +72,15 @@ def start_checkpoints(floor: str, node, start_checkpoint_client):
         node (rclpy.node.Node): instância do nó que chama a função
         start_checkpoint_client (Client): cliente do serviço Checkpoints
     """
-    
+
+    floor_map = extract_map_configuration(simulation)
+    if floor not in floor_map:
+        node.get_logger().warn(f"Andar {floor} sem checkpoints.")
+        return False
+
+    config = floor_map[floor]
     req = Checkpoints.Request()
-    req.floor = floor
+    req.floor = config['checkpoints']
     
 
     node.get_logger().info(f"Iniciando checkpoints para o andar {floor}...")
@@ -114,7 +116,7 @@ def teleport_robot(floor: int, node, teleport_robot_client):
         teleport_robot_client (Client): cliente do serviço teleport_robot
     """
     req = TeleportFloor.Request()
-    req.target_floor = floor
+    req.target_floor = int(floor)
 
 
     node.get_logger().info(f"Teleportando robô para o andar {floor}...")
