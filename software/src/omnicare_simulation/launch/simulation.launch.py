@@ -20,7 +20,7 @@ def generate_launch_description():
 
     world_path = DeclareLaunchArgument(
         name='world_path', 
-        default_value=[get_package_share_directory('omnicare_simulation'), '/simulation/worlds/simple_room_with_fixed_boxes.world'], 
+        default_value=[get_package_share_directory('omnicare_simulation'), '/simulation/worlds/FEI.world'], 
         description=''
     )
 
