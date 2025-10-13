@@ -3,7 +3,7 @@ from ament_index_python.packages import get_package_share_path
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, ExecuteProcess,RegisterEventHandler, TimerAction
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration, PythonExpression
 from launch.event_handlers import OnProcessExit, OnProcessStart
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
@@ -31,6 +31,10 @@ def generate_launch_description():
                                       description='Absolute path to robot urdf file')
     rviz_arg = DeclareLaunchArgument(name='rvizconfig', default_value=str(default_rviz_config_path),
                                      description='Absolute path to rviz config file')
+    
+    gazebo_world_arg = DeclareLaunchArgument(name='gazebo_world', default_value='FEI.world',
+                                     description='World file name to load')
+
     use_sim_time_arg = DeclareLaunchArgument(name='use_sim_time', default_value='true',
                                             description='Flag to enable use_sim_time')
 
@@ -81,15 +85,32 @@ def generate_launch_description():
 
     )
 
-    spawn_entity = Node(
+    HU_spawn_entity = Node(
+    	package='gazebo_ros', 
+    	executable='spawn_entity.py',
+        arguments=[
+            '-entity', 'OmniCare', 
+            '-topic', 'robot_description', 
+            '-x', '1.472040', '-y', '8.721508', '-z', '0.105318', '-Y', '3.118664',
+            '--ros-args', '--log-level', LaunchConfiguration('log_level')],
+        condition=IfCondition(
+            PythonExpression(["'", LaunchConfiguration('gazebo_world'), "' == 'HU_USP.world'"])
+        )
+    )
+
+    FEI_spawn_entity = Node(
     	package='gazebo_ros', 
     	executable='spawn_entity.py',
         arguments=[
             '-entity', 'OmniCare', 
             '-topic', 'robot_description', 
             '-x', '1.13', '-y', '-3.17', '-z', '0.105334', '-Y', '1.07',
-            '--ros-args', '--log-level', LaunchConfiguration('log_level')]
+            '--ros-args', '--log-level', LaunchConfiguration('log_level')],
+        condition=IfCondition(
+            PythonExpression(["'", LaunchConfiguration('gazebo_world'), "' == 'FEI.world'"])
+        )
     )
+
 
     robot_localization_node = Node(
         package='robot_localization',
@@ -107,9 +128,11 @@ def generate_launch_description():
         gui_arg,
         model_arg,
         rviz_arg,
+        gazebo_world_arg,
         use_sim_time_arg,
         robot_state_publisher_node, # publica o robô em si (URDF)
-        spawn_entity, #Spawn do robô
+        HU_spawn_entity, #Spawn do robô no HU USP
+        FEI_spawn_entity, #Spawn do robô na FEI
         rviz_node, #RVIZ2 para debug
         # twist_mux, #MUX de prioridade das velocidades
         robot_localization_node #EKF

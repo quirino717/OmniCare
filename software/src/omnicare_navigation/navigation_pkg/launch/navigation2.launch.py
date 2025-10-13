@@ -24,16 +24,19 @@ def generate_launch_description():
     path_to_map_arg = DeclareLaunchArgument(name='path_to_map', default_value= get_package_share_directory('navigation_pkg') + '/config/maps/simulation/simulation_quintoAndar_firstElevator.yaml',
                                         description='Flag of the path of map file')
     
+    gazebo_world_arg = DeclareLaunchArgument(name='gazebo_world', default_value= 'HU_USP.world',
+                                        description='Flag of the world file')
+    
     log_level_arg = DeclareLaunchArgument(name='log_level', default_value='ERROR',
                                         description='Flag of the log level for ROS2 nodes')
     
-
+    
 # -----------------------------------------------------
 
     simulation = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([get_package_share_directory('omnicare_simulation'), '/launch/simulation.launch.py']),
            launch_arguments={
-                'world_path': [get_package_share_directory('omnicare_simulation'), '/simulation/worlds/FEI.world'],
+                'world_path': [get_package_share_directory('omnicare_simulation'), '/simulation/worlds/', LaunchConfiguration('gazebo_world')],
             }.items(),
             condition=IfCondition(LaunchConfiguration('use_sim_time'))
     )
@@ -47,6 +50,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([get_package_share_directory('omnicare_bringup'),'/launch/load_sim_robot.launch.py']),
         launch_arguments={
             'rvizconfig': [get_package_share_directory('navigation_pkg'), '/config/rviz/robot.rviz'],
+            'gazebo_world': LaunchConfiguration('gazebo_world'),
         }.items(),
         condition=IfCondition(LaunchConfiguration('use_sim_time'))
     )
@@ -146,6 +150,7 @@ def generate_launch_description():
     ld.add_action(bringup_real_robot_arg)
     ld.add_action(params_file_arg)
     ld.add_action(path_to_map_arg)
+    ld.add_action(gazebo_world_arg)
     ld.add_action(log_level_arg)
     ld.add_action(simulation)
     ld.add_action(load_sim_robot)
