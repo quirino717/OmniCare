@@ -13,10 +13,10 @@
 [submodule "software/src/omnicare_vision/usb_cam"]
 	path = software/src/omnicare_vision/usb_cam
 	url = https://github.com/Thgm01/usb_cam
-[submodule "software/src/omnicare_hri/omnicare_assistant"]
-	path = software/src/omnicare_hri/omnicare_assistant
-	url = https://github.com/Thgm01/omnicare_assistant
 
 [submodule "software/src/omnicare_hri/omnicontroller_interface"]
 	path = software/src/omnicare_hri/omnicontroller_interface
 	url = https://github.com/LucasLagoeiro/omnicontroller_interface
+[submodule "software/src/omnicare_hri/omnicare_assistant"]
+	path = software/src/omnicare_hri/omnicare_assistant
+	url = https://github.com/Thgm01/omnicare_assistant.git
