@@ -6,8 +6,8 @@ NC='\e[0m' #No Color
 
 echo -e "${blue} STARTING JETSON CONFIGURATION ${NC}"
 
-git submodules init
-git submodules update
+git submodule init
+git submodule update
 
 sudo apt update & sudo apt upgrade -y
 sudo apt install python3-pip
