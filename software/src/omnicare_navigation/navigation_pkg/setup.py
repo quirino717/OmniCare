@@ -44,7 +44,8 @@ setup(
             'floorManagerNode = navigation_pkg.floorManagerNode:main',
             'amclOrientationNode = navigation_pkg.amclOrientationNode:main',
             'enterElevatorAction = navigation_pkg.enterElevatorAction:main',
-            'poseFromTFNode = navigation_pkg.poseFromTFNode:main'
+            'poseFromTFNode = navigation_pkg.poseFromTFNode:main',
+            'ihr = navigation_pkg.ihr:main'
         ],
     },
 )
