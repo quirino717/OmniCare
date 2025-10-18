@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 import os
 
-package_name = 'navigation_pkg'
+package_name    = 'omnicare_expression'
 
 data_files=[
    ('share/ament_index/resource_index/packages',
@@ -25,26 +25,22 @@ def package_files(data_files, directory_list):
    return data_files
 
 
+
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(exclude=['test']),
+    packages=[package_name],
     data_files=package_files(data_files, [ 'config/','launch/']),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='llagoeiro',
     maintainer_email='llagoeiro@outlook.com.br',
-    description='TODO: Package description',
-    license='Apache-2.0',
+    description='Pacote com as expressões personalizados do projeto OmniCare',
+    license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'checkpointsService = navigation_pkg.checkpointsService:main',
-            'switchFloorService = navigation_pkg.switchFloorService:main',
-            'floorManagerNode = navigation_pkg.floorManagerNode:main',
-            'amclOrientationNode = navigation_pkg.amclOrientationNode:main',
-            'enterElevatorAction = navigation_pkg.enterElevatorAction:main',
-            'poseFromTFNode = navigation_pkg.poseFromTFNode:main'
+            'alertNode = omnicare_expression.alertNode:main'
         ],
     },
 )

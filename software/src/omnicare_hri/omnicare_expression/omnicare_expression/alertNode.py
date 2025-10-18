@@ -66,7 +66,7 @@ DEFAULT_ALARM_TOPIC         = ''  # e.g. '/omnicare/navigation/alarm'
 # ------------------------------------------
 
 
-class HRINode(Node):
+class AlertNode(Node):
     """
     HRI state machine:
       - 'B' (Blue): idle     -> idle for >= idle_confirm_s (no need for motion)
@@ -74,7 +74,7 @@ class HRINode(Node):
       - 'R' (Red): error     -> only when an actual error is detected
     """
     def __init__(self):
-        super().__init__('omnicare_hri')
+        super().__init__('omnicare_expression')
 
         # Parameters
         self.port   = self.declare_parameter('port',   DEFAULT_PORT).value
@@ -225,7 +225,7 @@ class HRINode(Node):
 
 def main():
     rclpy.init()
-    rclpy.spin(HRINode())
+    rclpy.spin(AlertNode())
     rclpy.shutdown()
 
 
