@@ -22,10 +22,12 @@ class DatasetGenerator(Node):
         self.params = Parameters(self)
         self.bridge = CvBridge()
 
-        self.img_subscriber = self.create_subscription(Image, 
-                                                       self.params.img_topic_name,
-                                                       self.img_subscriber_callback,
-                                                       SensorDataQoS)
+        self.img_subscriber = self.create_subscription(
+            Image, 
+            self.params.img_topic_name,
+            self.img_subscriber_callback,
+            SensorDataQoS
+        )
 
         self.frames_count = 0
         self.period_s = 1/self.params.output_frame_fps
