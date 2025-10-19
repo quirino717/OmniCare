@@ -35,5 +35,8 @@ void motor_pid_control_thread_entry(unsigned long thread_input);
 extern const int ENCODERS_DIRECTION[];
 void init_encoders();
 
+extern uint8_t limit_switch_state [4];
+void init_limit_switches();
+
 
 #endif /* INC_ROBOT_DATA_H_ */

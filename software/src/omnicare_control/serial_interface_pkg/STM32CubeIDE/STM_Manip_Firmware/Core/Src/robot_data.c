@@ -7,6 +7,7 @@
 
 #include "tx_api.h"
 #include "pin_mapping.h"
+#include "stm32u5xx_hal.h"
 
 extern MotorData motors_data[3];
 
@@ -32,6 +33,8 @@ void Init_Motors_Data()
 		motors_data[i].PID[1] = 0.0005;
 		motors_data[i].PID[2] = 0;
 	}
+
+	init_limit_switches();
 }
 
 void actual_velocity(int Motor_Number,uint32_t dt)
@@ -102,9 +105,27 @@ void set_pid_config(char *char_pid_list)
 
 void set_motors_velocity(int32_t *velocity_list)
 {
-	motors_data[0].set_point_velocity = velocity_list[0];
-	motors_data[1].set_point_velocity = velocity_list[1];
+	/*
+	 * Se estiver no limite inferior e tentar subir ou
+	 * no limite superior e tentar descer define a velocidade
+	 * como 0
+	 */
+	if((limit_switch_state[0] == 1 && velocity_list[0] < 0) ||
+	   ((limit_switch_state[1] == 1 && velocity_list[0] > 0))){
+		motors_data[0].set_point_velocity = 0;
+	} else {
+		motors_data[0].set_point_velocity = velocity_list[0];
+	}
+
+	if((limit_switch_state[0] == 1 && velocity_list[1] < 0) ||
+	   ((limit_switch_state[1] == 1 && velocity_list[1] > 0))){
+		motors_data[1].set_point_velocity = 0;
+	} else {
+		motors_data[1].set_point_velocity = velocity_list[1];
+	}
+
 	motors_data[2].set_point_velocity = velocity_list[2];
+
 }
 
 void update_velocity(int *velocitys_pwm){
@@ -233,4 +254,12 @@ void init_encoders()
 
 }
 
+uint8_t limit_switch_state [4];
+void init_limit_switches(){
 
+	limit_switch_state[0] = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10) == 0) ? 1 : 0;
+	limit_switch_state[1] = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_11) == 0) ? 1 : 0;
+	limit_switch_state[2] = (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_12) == 0) ? 1 : 0;
+	limit_switch_state[3] = (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2) == 0) ? 1 : 0;
+
+}

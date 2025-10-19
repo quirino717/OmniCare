@@ -131,8 +131,6 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
-  Init_Motors_Data();
-
   /* USER CODE END Init */
 
   /* Configure the System Power */
@@ -172,6 +170,7 @@ int main(void)
 //  HAL_UART_Transmit(&huart1,(uint8_t *)"\r", sizeof("\r"), 1000);
   /* USER CODE END 2 */
 
+  Init_Motors_Data();
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
