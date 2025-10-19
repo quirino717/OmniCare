@@ -110,6 +110,7 @@ NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false\:fals
 NVIC.EXTI10_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true\:true
 NVIC.EXTI11_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true\:true
 NVIC.EXTI12_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true\:true
+NVIC.EXTI2_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true\:true
 NVIC.ForceEnableDMAVector=true
 NVIC.HardFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false\:false
 NVIC.MemoryManagement_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false\:false

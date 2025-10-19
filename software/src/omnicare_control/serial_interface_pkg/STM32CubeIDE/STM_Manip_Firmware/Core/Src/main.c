@@ -719,6 +719,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
   HAL_NVIC_SetPriority(EXTI10_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI10_IRQn);
 
@@ -747,6 +750,43 @@ PUTCHAR_PROTOTYPE
 
   return ch;
 }
+
+
+void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
+	switch(GPIO_Pin){
+		case GPIO_PIN_2:
+			limit_switch_state[0] = 0;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[1] = 0;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[2] = 0;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[3] = 0;
+			break;
+	}
+}
+
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin){
+	switch(GPIO_Pin){
+		case GPIO_PIN_2:
+			limit_switch_state[0] = 1;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[1] = 1;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[2] = 1;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[3] = 1;
+			break;
+	}
+}
+
+
 /* USER CODE END 4 */
 
 /**

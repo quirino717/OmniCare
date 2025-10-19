@@ -117,8 +117,8 @@ void set_motors_velocity(int32_t *velocity_list)
 		motors_data[0].set_point_velocity = velocity_list[0];
 	}
 
-	if((limit_switch_state[0] == 1 && velocity_list[1] < 0) ||
-	   ((limit_switch_state[1] == 1 && velocity_list[1] > 0))){
+	if((limit_switch_state[2] == 1 && velocity_list[1] < 0) ||
+	  ((limit_switch_state[3] == 1 && velocity_list[1] > 0))){
 		motors_data[1].set_point_velocity = 0;
 	} else {
 		motors_data[1].set_point_velocity = velocity_list[1];
@@ -192,6 +192,16 @@ void motor_pid_control_thread_entry(unsigned long thread_input)
 
 
 	while(1){
+		if((limit_switch_state[0] == 1 && velocity_list[0] < 0) ||
+		   ((limit_switch_state[1] == 1 && velocity_list[0] > 0))){
+			motors_data[0].set_point_velocity = 0;
+		}
+
+		if((limit_switch_state[2] == 1 && velocity_list[1] < 0) ||
+		   ((limit_switch_state[3] == 1 && velocity_list[1] > 0))){
+			motors_data[1].set_point_velocity = 0;
+		}
+
 		if(first_time){
 			first_time = 0;
 		}
