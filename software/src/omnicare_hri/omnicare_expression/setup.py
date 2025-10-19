@@ -40,7 +40,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'alertNode = omnicare_expression.alertNode:main'
+            'alertNode = omnicare_expression.alertNode:main',
+            'expressionsNode = omnicare_expression.expressionsNode:main'
         ],
     },
 )
