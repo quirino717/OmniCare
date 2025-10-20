@@ -15,7 +15,7 @@ import time
 # }
 
 
-def switch_floor(floor: int, node, switch_floor_client,simulation):
+def switch_floor(floor: int, node, switch_floor_client, world, simulation):
     """
     Envia uma requisição para troca de mapa e posicionamento com base no andar detectado.
 
@@ -26,7 +26,7 @@ def switch_floor(floor: int, node, switch_floor_client,simulation):
         simulation: variavel booleana para distinguir se está na simulação ou não
     """
     
-    floor_map = extract_map_configuration(simulation)
+    floor_map = extract_map_configuration(world, simulation)
     if floor not in floor_map:
         node.get_logger().warn(f"Andar {floor} não mapeado.")
         return False
@@ -38,7 +38,7 @@ def switch_floor(floor: int, node, switch_floor_client,simulation):
     req.pose.position.y = config['position']['y']
     req.yaw = config['orientation']['yaw']
 
-
+    
     node.get_logger().info(f"Configuração do andar {floor}: {config} com o req {req}")
     node.get_logger().info(f"Trocando para o andar {floor} com mapa {req.map_path}...")
 
@@ -63,7 +63,7 @@ def switch_floor(floor: int, node, switch_floor_client,simulation):
 
     future.add_done_callback(response_callback)
 
-def start_checkpoints(floor: int, node, start_checkpoint_client, simulation):
+def start_checkpoints(floor: int, node, start_checkpoint_client, world, simulation):
     """
     Inicia o serviço de seguir os checkpoints.
 
@@ -73,7 +73,7 @@ def start_checkpoints(floor: int, node, start_checkpoint_client, simulation):
         start_checkpoint_client (Client): cliente do serviço Checkpoints
     """
 
-    floor_map = extract_map_configuration(simulation)
+    floor_map = extract_map_configuration(world, simulation)
     if floor not in floor_map:
         node.get_logger().warn(f"Andar {floor} sem checkpoints.")
         return False
@@ -106,17 +106,28 @@ def start_checkpoints(floor: int, node, start_checkpoint_client, simulation):
 
     future.add_done_callback(response_callback)
 
-def teleport_robot(floor: int, node, teleport_robot_client):
+def teleport_robot(world: int, floor: int, node, teleport_robot_client):
     """
     Inicia o serviço de teleportar o robô para a simulação.
 
     Args:
+        world (int): qual mundo está sendo utilizado
         floor (int): andar para iniciar os checkpoints
         node (rclpy.node.Node): instância do nó que chama a função
         teleport_robot_client (Client): cliente do serviço teleport_robot
     """
+    floor_map = extract_map_configuration(world, True)
+    if floor not in floor_map:
+        node.get_logger().warn(f"Andar {floor} não mapeado.")
+        return False
+
+    config = floor_map[floor]
     req = TeleportFloor.Request()
-    req.target_floor = int(floor)
+    req.pose.position.x = config['teleport']['position']['x']
+    req.pose.position.y = config['teleport']['position']['y']
+    req.pose.position.z = config['teleport']['position']['z']
+    req.yaw = config['teleport']['orientation']['yaw']
+
 
 
     node.get_logger().info(f"Teleportando robô para o andar {floor}...")

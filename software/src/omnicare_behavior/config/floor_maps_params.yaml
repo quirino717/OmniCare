@@ -33,38 +33,102 @@
 #       w: 0.57
 
 # # Test
-real:
-  '5':
-    map_path: "config/maps/FEI/FEI_quintoAndar_elevadorManutencao.yaml"
-    checkpoints: "quinto_andar_manutencao"
-    position:
-      x: 3.78
-      y: -0.76
-    orientation:
-      yaw: 0.83
-  '4':
-    map_path: "config/maps/FEI/FEI_quartoAndar_elevadorManutencao.yaml"
-    checkpoints: "quarto_andar_manutencao"
-    position:
-      x: -5.04
-      y: 12.61
-    orientation:
-      yaw: -1.21  
+FEI:
+  real:
+    '5':
+      map_path: "config/maps/FEI/FEI_quintoAndar_elevadorManutencao.yaml"
+      checkpoints: "quinto_andar_manutencao"
+      position:
+        x: 3.78
+        y: -0.76
+      orientation:
+        yaw: 0.83
+    '4':
+      map_path: "config/maps/FEI/FEI_quartoAndar_elevadorManutencao.yaml"
+      checkpoints: "quarto_andar_manutencao"
+      position:
+        x: -5.04
+        y: 12.61
+      orientation:
+        yaw: -1.21  
+  sim:
+    '5':
+      map_path: "config/maps/simulation/simulation_quintoAndar_firstElevator.yaml"
+      checkpoints: "simulation_FEI_quintoAndar"
+      position: 
+        x: -3.986
+        y: -1.120
+      orientation:
+        yaw: 0.95
+      teleport:
+        position:
+          x: 3.78
+          y: -0.76
+          z: 0.120965
+        orientation:
+          yaw: 0.83
+    '4':
+      map_path: "config/maps/simulation/simulation_quartoAndar_firstElevator.yaml"
+      checkpoints: "simulation_FEI_quartoAndar"
+      position:
+        x: -4.78
+        y: 2.89
+      orientation:
+        yaw: -1.97
+      teleport:
+        position:
+          x: 1.544303
+          y: 3.214141
+          z: 0.120965
+        orientation:
+          yaw: 1.17
 
-sim:
-  '5':
-    map_path: "config/maps/simulation/simulation_quintoAndar_firstElevator.yaml"
-    checkpoints: "simulation_quintoAndar"
-    position: 
-      x: -3.986
-      y: -1.120
-    orientation:
-      yaw: 0.95
-  '4':
-    map_path: "config/maps/simulation/simulation_quartoAndar_firstElevator.yaml"
-    checkpoints: "simulation_quartoAndar"
-    position:
-      x: -4.78
-      y: 2.89
-    orientation:
-      yaw: -1.97
+HU_USP:
+  real:
+    '3':
+      map_path: "config/maps/HU_USP/HU_terceiro_andar.yaml"
+      checkpoints: "HU_USP_terceiro_andar"
+      position:
+        x: -1.5
+        y: -3.5
+      orientation:
+        yaw: 1.57
+    '1':
+      map_path: "config/maps/HU_USP/HU_primeiro_andar.yaml"
+      checkpoints: "HU_USP_primeiro_andar"
+      position:
+        x: -1.5
+        y: -3.5
+      orientation:
+        yaw: 1.57  
+  sim:
+    '3':
+      map_path: "config/maps/simulation/Improved_HU_terceiro_andar.yaml"
+      checkpoints: "USP_terceiro_andar"
+      position: 
+        x: -6.596
+        y: 1.188
+      orientation:
+        yaw: 0.366
+      teleport:
+        position:
+          x: -23.028
+          y: -6.653
+          z: 0.120
+        orientation:
+          yaw: -0.046
+    '1':
+      map_path: "config/maps/simulation/Improved_HU_primeiro_andar.yaml"
+      checkpoints: "USP_primeiro_andar"
+      position:
+        x: 8.813
+        y: 6.023
+      orientation:
+        yaw: 3.13
+      teleport:
+        position:
+          x: -1.5
+          y: -3.5
+        orientation:
+          yaw: 1.57
+
