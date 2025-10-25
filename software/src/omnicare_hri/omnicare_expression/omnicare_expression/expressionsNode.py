@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import os
-import time
+import os, time, tempfile
 import vlc
+from enum import Enum
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -9,237 +9,161 @@ from ament_index_python.packages import get_package_share_directory
 
 PKG = 'omnicare_expression'
 SHARE_DIR = get_package_share_directory(PKG)
-
-# Coloque seus vídeos em <share>/config/
 FACE_DIR = os.path.join(SHARE_DIR, 'config')
-IDLE     = os.path.join(FACE_DIR, 'idle.mp4')          # vídeo em loop
-PRESENT  = os.path.join(FACE_DIR, 'presentation.mp4')  # vídeo único da apresentação
+MASTER   = os.path.join(FACE_DIR, 'main_video.mp4')   # único arquivo
+
+
+# -----------------------------
+# Marcadores (segundos)
+# -----------------------------
+LABELS = {
+    "pre_moviments_anchor":     15.40,   # quando a apresentação pede para “ir ao idle”
+    "pos_moviments_anchor":     16.00,   # quando a apresentação pede para “ir ao idle”
+    "idle_start":               48.02,   # IDLE_START
+    "idle_loop":                56.00,   # início do loop idle no vídeo master
+    "idle_end":                 64.01,   # fim do trecho idle no master 
+    "transition_end":           72.00,   # fim da transição do idle para a continuação
+}
+
+TIMELINE = {
+    1:                   "pre_moviments_anchor",
+    2:                   "pos_moviments_anchor",
+    3:                   "manipulation_anchor",
+    4:                            "led_anchor",
+    5:                         "buzzer_anchor"
+}
+# tolerância (ms) para disparar um evento ao redor do tempo alvo
+EPS_MS = 120
 
 class ExpressionsPlayer(Node):
     def __init__(self):
         super().__init__('omnicare_expressions')
+        if not os.path.exists(MASTER):
+            self.get_logger().error(f"Master não encontrado: {MASTER}")
 
-        self.get_logger().info("Iniciando nó de expressões OmniCare…")
-        self.get_logger().info(f"share dir: {SHARE_DIR}")
-        self.get_logger().info(f"Idle: {IDLE}")
-        self.get_logger().info(f"Presentation: {PRESENT}")
-
-        # --- libVLC base ---
-        self.instance = vlc.Instance(
-            "--no-video-title-show",
-            "--quiet",
-            "--avcodec-hw=any",     # mude para nvdec/vaapi se quiser forçar
-            "--fullscreen"
-        )
-
-        # MediaPlayer “de verdade” (janela)
+        # VLC
+        self.instance = vlc.Instance("--no-video-title-show", "--quiet", "--avcodec-hw=any", "--fullscreen")
         self.player = self.instance.media_player_new()
-
-        # MediaListPlayer para tocar listas com modo loop
-        self.list_player = vlc.MediaListPlayer()
-        self.list_player.set_media_player(self.player)
-
-        # Eventos do MediaPlayer (usamos para fullscreen e fim de mídia)
         em = self.player.event_manager()
         em.event_attach(vlc.EventType.MediaPlayerPlaying, self._on_playing)
-        em.event_attach(vlc.EventType.MediaPlayerEndReached, self._on_end)
 
-        # Subscriptions ROS
-        self.sub_present = self.create_subscription(String, '/hri/present', self._present_cb, 10)
-        self.sub_state   = self.create_subscription(String, '/hri/state',    self._state_cb,    10)
+        # estado
+        self._pending_seek_ms = None
+        self._fired_ids = set()          # ids (índices) de eventos já disparados
+        self.exit_idle_pending = False     # pedido para sair do idle ao fim do ciclo atual
+        self.resume_target_ms = None       # para onde pular quando sair do idle
+        self.count_state = 1
 
-        # Estado de apresentação
-        self.mode = "idle"
-        self._milestones = []  # (ms, payload)
-        self._fired = set()    # marcos já disparados
+        # estado de timeline/idle
+        self.anchor_fired = False
+        self.idle_loop_active = False
+        self.resume_ms = None  # para onde continuar após o idle (idle_end)
 
-        self._last_time_ms = -1          # último tempo lido do player (ms)
-        self._no_progress_ms = 0         # tempo acumulado sem progresso (ms)
+        # ROS: sinal externo para sair do idle
+        self.sub_idle_done = self.create_subscription(String, '/hri/idle_done', self._idle_done_cb, 10)
 
-        # Timer para checar o tempo do vídeo durante a apresentação (20 Hz)
+        # timer
         self.timer = self.create_timer(0.05, self._tick)
 
-        # Inicia em idle (loop robusto via MediaListPlayer)
-        self.play_idle_loop()
+        # start
+        self._play_master()
 
-    # ==========================
-    # Helpers VLC / Overlays
-    # ==========================
-    def _on_playing(self, _evt):
-        # Garante fullscreen quando a janela existir
-        try:
-            self.player.set_fullscreen(True)
-        except Exception as e:
-            self.get_logger().warn(f"Falha ao setar fullscreen: {e}")
+    # ------------ util ------------
+    def _s_to_ms(self, s: float) -> int:
+        return int(round(s * 1000.0))
 
-    def _on_end(self, _evt):
-        # Este evento pode disparar quando a apresentação termina
-        # No idle (loop) ignoramos; no presenting, voltamos ao idle
-        if self.mode == "presenting":
-            self.get_logger().info("Apresentação concluída. Voltando para idle.")
-            self.mode = "idle"
-            self._fired.clear()
-            self._clear_logo()
-            self.play_idle_loop()
+    def _resolve_label_to_ms(self, label_or_sec) -> int:
+        if isinstance(label_or_sec, (int, float)):
+            return self._s_to_ms(float(label_or_sec))
+        if label_or_sec in LABELS:
+            return self._s_to_ms(LABELS[label_or_sec])
+        raise KeyError(f"Label '{label_or_sec}' não encontrado em LABELS")
 
-    def _show_marquee(self, text: str, ms: int = 4500, x: int = 40, y: int = 60, size: int = 36, opacity: int = 255):
-        self.player.video_set_marquee_int(vlc.VideoMarqueeOption.Enable, 1)
-        self.player.video_set_marquee_int(vlc.VideoMarqueeOption.X, x)
-        self.player.video_set_marquee_int(vlc.VideoMarqueeOption.Y, y)
-        self.player.video_set_marquee_int(vlc.VideoMarqueeOption.Size, size)
-        self.player.video_set_marquee_int(vlc.VideoMarqueeOption.Timeout, ms)
-        self.player.video_set_marquee_int(vlc.VideoMarqueeOption.Opacity, opacity)
-        self.player.video_set_marquee_string(vlc.VideoMarqueeOption.Text, text)
-
-    def _show_logo(self, png_path: str, x: int = 40, y: int = 120, opacity: int = 255):
-        if not os.path.exists(png_path):
-            self.get_logger().warn(f"Logo não encontrado: {png_path}")
-            return
-        self.player.video_set_logo_int(vlc.VideoLogoOption.enable, 1)
-        self.player.video_set_logo_int(vlc.VideoLogoOption.x, x)
-        self.player.video_set_logo_int(vlc.VideoLogoOption.y, y)
-        self.player.video_set_logo_int(vlc.VideoLogoOption.opacity, opacity)
-        self.player.video_set_logo_string(vlc.VideoLogoOption.file, png_path)
-
-    def _clear_logo(self):
-        self.player.video_set_logo_int(vlc.VideoLogoOption.logo_enable, 0)
-
-    # ==========================
-    # Reprodutores
-    # ==========================
-    def play_idle_loop(self):
-        """Loop robusto do vídeo idle usando MediaListPlayer."""
-        if not os.path.exists(IDLE):
-            self.get_logger().error(f"Arquivo idle não encontrado: {IDLE}")
-            return
-        ml = self.instance.media_list_new([IDLE])
-        self.list_player.set_media_list(ml)
-        self.list_player.set_playback_mode(vlc.PlaybackMode.loop)  # << loop real
-        self.list_player.play()
-
-    def play_presentation_once(self):
-        """Toca o vídeo de apresentação apenas uma vez, sem lista."""
-        if not os.path.exists(PRESENT):
-            self.get_logger().error(f"Arquivo de apresentação não encontrado: {PRESENT}")
-            return
-        # Para o list_player se estiver em idle
-        try:
-            self.list_player.stop()
-        except Exception:
-            pass
-        media = self.instance.media_new(PRESENT)
+    # ------------ reprodução / seek ------------
+    def _play_master(self):
+        media = self.instance.media_new(MASTER)
         self.player.set_media(media)
         self.player.play()
 
-    # ==========================
-    # ROS Callbacks
-    # ==========================
-    def _present_cb(self, msg: String):
-        cmd = msg.data.strip().lower()
-        if cmd in ("start", "play", "apresentar"):
-            self.mode = "presenting"
-            self.get_logger().info("Iniciando apresentação…")
-            self._prepare_milestones()
-            self._fired.clear()
-            self._clear_logo()
-            self.play_presentation_once()
-        elif cmd in ("stop", "cancel", "abort"):
-            self.get_logger().info("Interrompendo apresentação e voltando ao idle…")
-            self.mode = "idle"
-            self._fired.clear()
-            self._clear_logo()
-            self.play_idle_loop()
+    def _seek_ms(self, ms: int):
+        ok = self.player.set_time(ms)
+        if not ok:
+            self._pending_seek_ms = ms
 
-    def _state_cb(self, msg: String):
-        if msg.data.strip().lower() == "idle" and self.mode != "idle":
-            self.mode = "idle"
-            self._fired.clear()
-            self._clear_logo()
-            self.play_idle_loop()
+    # ==== eventos VLC ====
+    def _on_playing(self, _evt):
+        try:
+            self.player.set_fullscreen(True)
+        except Exception:
+            pass
+        if self._pending_seek_ms is not None:
+            ms = self._pending_seek_ms
+            if self.player.set_time(ms):
+                self._pending_seek_ms = None
 
-    # ==========================
-    # Milestones / Timer
-    # ==========================
-    def _prepare_milestones(self):
-        """Define os capítulos (tempo em ms) da apresentação."""
-        self._milestones = [
-            ( 2000,  {"text": "🧠 OmniCare: Assistente hospitalar autônomo", "dur": 4500}),
-            ( 8000,  {"text": "🛞 Movimento omnidirecional: precisão em espaços apertados", "dur": 5000}),
-            (15000,  {"text": "🤖 Manipulador: entrega segura de medicamentos", "dur": 5000}),
-            (22000,  {"text": "💡 LED & 🔊 Buzzer: feedback claro para a equipe", "dur": 5000}),
-            # Exemplo com logo:
-            # (15000, {"logo": os.path.join(FACE_DIR, "icons", "arm.png")}),
-        ]
-
-    def _tick(self):
-        """Checa o tempo do vídeo durante a apresentação e dispara overlays."""
-        if self.mode != "presenting":
+    # ==== callbacks ROS ====
+    def _idle_done_cb(self, _msg: String):
+        """Chamado quando a ação física terminou -> sair do loop do idle e continuar."""
+        if not self.idle_loop_active:
             return
-        
+        # Desativa loop e pula para idle_end (continuação natural da apresentação)
+        # self.idle_loop_active = False
+        # target = self._s_to_ms(LABELS[TIMELINE[self.count_state]])
+        # self.get_logger().info(f"[idle_done] Saindo do loop idle -> seek para {LABELS[TIMELINE[self.count_state]]:.2f}s")
+        # self._seek_ms(target)
+        self.count_state += 1
+        self.resume_target_ms = self._s_to_ms(LABELS[TIMELINE[self.count_state]])
+        self.exit_idle_pending = True
+        self.get_logger().info("[idle_done] Sinal recebido: sair do idle ao fim do ciclo atual.")
+
+    # ==== controle principal ====
+    def _tick(self):
         state = self.player.get_state()
-        L = self.player.get_length()  # ms (ou -1 se ainda não disponível
-        t = self.player.get_time()  # ms (ou -1 se ainda não disponível)
+        if state != vlc.State.Playing:
+            # aplicar seek pendente assim que possível
+            if self._pending_seek_ms is not None:
+                if self.player.set_time(self._pending_seek_ms):
+                    self._pending_seek_ms = None
+                    self.fade_in(180)
+            return
+
+        t = self.player.get_time()  # ms
         if t < 0:
             return
-        for ms, payload in self._milestones:
-            if ms in self._fired or t < ms:
-                continue
-            # Dispara
-            if "text" in payload:
-                self._show_marquee(payload["text"], ms=payload.get("dur", 4500))
-            if "logo" in payload:
-                self._show_logo(payload["logo"])
-            # Aqui você pode também publicar algo (ex.: acionar LED real)
-            # self.pub_led.publish(Bool(data=True))
-            self._fired.add(ms)
+        # 1) Quando passar do pre_idle_anchor -> entrar no loop do idle
+        if not self.anchor_fired:
+            anchor_ms = self._s_to_ms(LABELS[TIMELINE[self.count_state]])
+            if t + EPS_MS >= anchor_ms:
+                self.anchor_fired = True
+                self.resume_ms = self._s_to_ms(LABELS["idle_end"])  # para onde continuar depois do idle
+                # entrar no idle (loopa idle_start..idle_end)
+                self.idle_loop_active = True
+                self.get_logger().info(f"[anchor] Entrando no idle: seek {LABELS['idle_start']:.2f}s, loop até {LABELS['idle_end']:.2f}s")
+                self._seek_ms(self._s_to_ms(LABELS["idle_start"]))
+                return  # espera o seek aplicar
+
+        # 2) Se estiver em loop do idle, mantenha looping
+        if self.idle_loop_active:
+            idle_start_ms = self._s_to_ms(LABELS["idle_loop"])
+            idle_end_ms   = self._s_to_ms(LABELS["idle_end"]) if not self.exit_idle_pending else self._s_to_ms(LABELS["transition_end"])
+
+            # Estamos perto do fim do trecho idle?
+            if t >= idle_end_ms - EPS_MS:
+                if self.exit_idle_pending and self.resume_target_ms is not None:
+                    # Sair do idle: NÃO relupar. Faz seek para o alvo da apresentação.
+                    self.idle_loop_active = False
+                    self.exit_idle_pending = False
+                    target = self.resume_target_ms
+                    self.resume_target_ms = None
+                    self.get_logger().info(f"[idle] Saindo ao fim do ciclo -> seek para {target/1000:.3f}s")
+                    self._seek_ms(target)
+                    return
+                else:
+                    # Continuar loopando o idle (reinicia o trecho)
+                    self._seek_ms(idle_start_ms)
+            return  # permanece gerenciado aqui enquanto estiver em idle
         
-            # --- Fallbacks para detectar término e voltar ao idle ---
-
-        # 1) Estados de término/erro conhecidos do VLC
-        if state in (vlc.State.Ended, vlc.State.Stopped, vlc.State.Error):
-            self.get_logger().info(f"Fim/erro detectado por estado VLC: {state}. Voltando ao idle.")
-            self.mode = "idle"
-            self._fired.clear()
-            self._clear_logo()
-            self.play_idle_loop()
-            # reset watchdog
-            self._last_time_ms = -1
-            self._no_progress_ms = 0
-            return
-
-        # 2) Checagem por tempo alcançando o comprimento do vídeo
-        if t >= 0 and L and L > 0:
-            # margem de 200 ms para considerar 'acabou'
-            if t >= (L - 200):
-                self.get_logger().info("Apresentação concluída. Voltando para idle.")
-                self.get_logger().info("Fim detectado por tempo (t≈len). Voltando ao idle.")
-                self.mode = "idle"
-                self._fired.clear()
-                self._clear_logo()
-                self.play_idle_loop()
-                self._last_time_ms = -1
-                self._no_progress_ms = 0
-                return
-
-        # 3) Watchdog de progresso (resolve caso o player “congele” sem emitir EndReached)
-        # Incrementa 50ms por tick (o timer roda a cada 0.05 s)
-        if t >= 0:
-            if t == self._last_time_ms:
-                self._no_progress_ms += 50
-            else:
-                self._no_progress_ms = 0
-                self._last_time_ms = t
-
-            # Se ficar 3s sem progredir, consideramos encerrado e voltamos ao idle
-            if self._no_progress_ms >= 3000:
-                self.get_logger().warn("Sem progresso no tempo de mídia por 3s. Voltando ao idle (watchdog).")
-                self.mode = "idle"
-                self._fired.clear()
-                self._clear_logo()
-                self.play_idle_loop()
-                self._last_time_ms = -1
-                self._no_progress_ms = 0
-
+        # 3) Segue a apresentação normal (sem nada para fazer aqui)
 def main():
     rclpy.init()
     node = ExpressionsPlayer()
