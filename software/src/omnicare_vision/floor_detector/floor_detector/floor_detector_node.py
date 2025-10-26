@@ -106,6 +106,9 @@ class FloorDetector(Node):
         self.image_raw = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         self.last_header = msg.header
 
+        # Girar 90 graus para a direita (horário)
+        self.image_raw = cv2.rotate(self.image_raw, cv2.ROTATE_90_CLOCKWISE)
+
         self.detect_floor(self.image_raw.copy())
 
     def detect_floor(self, img):        

@@ -21,8 +21,8 @@ class FloorTeleport(Node):
 
         # Defina as coordenadas dos andares
         self.floor_coords = {
-            5: {'x': 0.0     , 'y': 0.0     , 'z': 0.1     , 'yaw': 0.0      },  # Andar 5
-            4: {'x': 1.544303, 'y': 3.214141, 'z': 0.120965, 'yaw': 1.17}   # Andar 4
+            5: {'x': 0.0     , 'y': 0.0     , 'z': 0.1     , 'yaw': 0.0 },  # Andar 5 (FEI)
+            4: {'x': 1.544303, 'y': 3.214141, 'z': 0.120965, 'yaw': 1.17}   # Andar 4 (FEI)
         }
 
         self.get_logger().info('Service /omnicare/simulation/teleport_floor pronto!')
@@ -37,18 +37,13 @@ class FloorTeleport(Node):
         }
 
     def teleport_cb(self, request, response):
-        if request.target_floor not in self.floor_coords:
-            response.success = False
-            response.message = 'Andar inválido'
-            return response
-
-        coords = self.floor_coords[request.target_floor]
-        q = self.yaw_to_quaternion(coords['yaw'])
+        self.get_logger().info(f"Recebidod pedido de teleportar para essas coordenadas: x={request.pose.position.x}, y={request.pose.position.y}, yaw={request.yaw}")
+        q = self.yaw_to_quaternion(request.yaw)
         state = EntityState()
-        state.name = 'OmniCare'  # substitua pelo nome real do seu robô no Gazebo
-        state.pose.position.x = coords['x']
-        state.pose.position.y = coords['y']
-        state.pose.position.z = coords['z']
+        state.name = 'OmniCare'  
+        state.pose.position.x = request.pose.position.x
+        state.pose.position.y = request.pose.position.y
+        state.pose.position.z = request.pose.position.z
         state.pose.orientation.x = q['x']
         state.pose.orientation.y = q['y']
         state.pose.orientation.z = q['z']

@@ -1,4 +1,5 @@
-uint8 target_floor
+geometry_msgs/Pose pose
+float64 yaw
 ---
 bool success
 string message

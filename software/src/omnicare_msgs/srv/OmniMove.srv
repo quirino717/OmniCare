@@ -1,0 +1,7 @@
+float32 speed        # m/s pico
+float32 duration     # s
+float32 frequency    # Hz do vai-e-vem (seno)
+string  axis         # "x" ou "y" (default: "y" lateral)
+---
+bool   success
+string message

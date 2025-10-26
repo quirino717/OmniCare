@@ -20,6 +20,8 @@ from omnicare_behavior.states.floor_navigation import switch_floor, start_checkp
 from omnicare_behavior.states.align_elevator import activate_display_inference, deactivate_display_inference, align_the_robot
 
 
+# ros2 action send_goal   /omnicare/behavior/run_mission   omnicare_msgs/action/RunMission   '{simulation: False, initial: 5, target: 4}'   --feedback
+
 class ElevatorBehaviorManager(Node):
 
     def __init__(self):
@@ -38,12 +40,13 @@ class ElevatorBehaviorManager(Node):
 
 
         # Compila a regex para extrair números do final da string do andar
-        self.regex = re.compile(r'(-?\d+)$')
+        self.regex = re.compile(r'andar_(\w+)$')
 
         # Variables
         self.direction,self.last_amcl_time, self.start_time, self.actual_time = None, None, None, None
-        self.linear, self.angular, self.l_x, self.l_y, self.a_z = None, None, 0.0, 0.0, 0.0
+        self.current_state, self.linear, self.angular, self.l_x, self.l_y, self.a_z = None, None, None, 0.0, 0.0, 0.0
         self.detect_counter = 0
+        
 
         # Pubs
         self.teleop_pub = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -99,10 +102,11 @@ class ElevatorBehaviorManager(Node):
 
         # Get parameters from the goal
         self.simulation = self.goal_.simulation
+        self.world = self.goal_.world
         self.actual_floor = self.goal_.initial
         self.target_floor = self.goal_.target
 
-        self.get_logger().info(f"Mission received: from {self.actual_floor} to {self.target_floor} | Simulation: {self.simulation}")
+        self.get_logger().info(f"Mission received: World: {self.world} | from {self.actual_floor} to {self.target_floor} | Simulation: {self.simulation}")
         rate = self.create_rate(10) #10 Hz
         while rclpy.ok():
             self._check_states()
@@ -148,6 +152,7 @@ class ElevatorBehaviorManager(Node):
                 floor=self.actual_floor,  # Which floor to start navigation 
                 node=self, # Pass the current node instance
                 switch_floor_client=self.switch_floor, # Pass the SwitchFloor client instance
+                world=self.world, # Pass the world parameter
                 simulation=self.simulation # Pass the simulation flag
             )
                         
@@ -155,6 +160,7 @@ class ElevatorBehaviorManager(Node):
                 floor=self.actual_floor,  # Which floor to start checkpoints
                 node=self, # Pass the current node instance
                 start_checkpoint_client=self.start_checkpoint, # Pass the Checkpoints client instance
+                world=self.world, # Pass the world parameter
                 simulation=self.simulation # Pass the simulation flag
             )
         else:
@@ -163,6 +169,7 @@ class ElevatorBehaviorManager(Node):
                 floor=self.target_floor,  
                 node=self, 
                 switch_floor_client=self.switch_floor, 
+                world=self.world,
                 simulation=self.simulation 
             )
                         
@@ -170,6 +177,7 @@ class ElevatorBehaviorManager(Node):
                 floor=self.target_floor,  # Which floor to start checkpoints
                 node=self, # Pass the current node instance
                 start_checkpoint_client=self.start_checkpoint, # Pass the Checkpoints client instance
+                world=self.world, # Pass the world parameter 
                 simulation=self.simulation # Pass the simulation flag
             )
 
@@ -281,7 +289,7 @@ class ElevatorBehaviorManager(Node):
     #  --------------------------  Wait for floor State -----------------------------
 
     def _display_detection_cb(self, msg):
-        self.get_logger().info(f"msg: {msg.floor_name}" )
+        # self.get_logger().info(f"msg: {msg.floor_name}" )
 
         # Safety verifications to not crash the node
         if msg.floor_name is None or msg.floor_name == '':
@@ -298,18 +306,29 @@ class ElevatorBehaviorManager(Node):
         if floor_filtred is None:
             return
 
-        # If the detected floor matches the target floor, increment the counter
-        if floor_filtred.group(1) == self.target_floor:
-            self.detect_counter += 1
-            
+
+        # If is on the same floor (or going to a walk in the elevator), do a keep-alive on the watchdog  
+        valid_floors = ['t','1', '2', '3', '4', '5']
+        if floor_filtred.group(1) in valid_floors:
+            self.get_logger().info("Im in valid floor")
+            # Watchdog keep-alive
+            self.watchdog.keep_alive()
+
+            # If the detected floor matches the target floor, increment the counter
+            if floor_filtred.group(1) == self.target_floor:
+                self.detect_counter += 1
+            else:
+                self.detect_counter = 0
 
         # If the detected floor matches the target floor consistently, consider it confirmed
-        if self.detect_counter >= 20 and self.start_navigation:
+        if self.detect_counter >= 5 and self.start_navigation:
+            self.get_logger().info("Detecção: Chegou no andar correto!")
             self.detect_counter = 0  # Reset the counter
 
             if self.simulation:
                 # Teleport the robot to the correct floor in simulation
                 teleport_robot( 
+                    world=self.world, # Pass the world parameter
                     floor=self.target_floor,  # Which floor to teleport
                     node=self, # Pass the current node instance
                     teleport_robot_client=self.teleport_robot # Pass the TeleportFloor client instance
@@ -323,8 +342,7 @@ class ElevatorBehaviorManager(Node):
 
             # Watchdog keep-alive
             self.watchdog.keep_alive()
-
-            self.get_logger().info("Detecção: Chegou no andar correto!")
+            
 
         # If the robot for any reason entered in the condition above but does not switch the map and start
         # the navigation on the target floor, the watchdog will timeout and in the timeout cb it will threat this situation
@@ -332,19 +350,21 @@ class ElevatorBehaviorManager(Node):
             # Watchdog keep-alive
             self.watchdog.keep_alive()
 
-        self.get_logger().info(f"Detecção: Andar atual {int(floor_filtred.group(1))}, Alvo {self.target_floor}.")
+        self.get_logger().info(f"Detecção: Andar atual {floor_filtred.group(1)}, Alvo {self.target_floor}, Floor_navigation {self.start_navigation}, Count {self.detect_counter}.")
 
 
    
     def _wait_for_floor(self):
+        if self.feedback_msg_.robot_feedback != "Waiting-floor":
+            # Aqui você pode monitorar a mudança de andar via tópico de visão
+            self.get_logger().info("Se posicionando e aguardando chegada no 4º andar (via visão)...")
+
         self.feedback_msg_.robot_feedback = "Waiting-floor"
         
         if (self.simulation):
             # Watchdog keep-alive
             self.watchdog.keep_alive()
 
-        # Aqui você pode monitorar a mudança de andar via tópico de visão
-        self.get_logger().info("Se posicionando e aguardando chegada no 4º andar (via visão)...")
 
 
     #  ------------------------------  END -------------------------------
