@@ -1,0 +1,5 @@
+string action        # ex: "press_button", "wave", "home", etc.
+float32 duration     # s (se relevante para a ação)
+---
+bool   success
+string message

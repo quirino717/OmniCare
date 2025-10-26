@@ -25,10 +25,13 @@ set(msg_files
   "srv/SwitchFloor.srv"
   "srv/Checkpoints.srv"
   "srv/TeleportFloor.srv"
+  "srv/OmniMove.srv"
+  "srv/MoveArm.srv"
+  "srv/LEDandBuzz.srv"
 
-   # ACT
-   "action/EnterElevator.action"
-   "action/RunMission.action"
+  # ACT
+  "action/EnterElevator.action"
+  "action/RunMission.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

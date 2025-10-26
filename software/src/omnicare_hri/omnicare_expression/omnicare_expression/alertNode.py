@@ -47,7 +47,7 @@ except Exception as e:
 
 
 # ---------------- Defaults ----------------
-DEFAULT_PORT            = '/dev/ttyACM0'
+DEFAULT_PORT            = '/dev/ttyUSB0'
 DEFAULT_BAUD            = 115200
 DEFAULT_LIN_EPS         = 0.05   # m/s
 DEFAULT_ANG_EPS         = 0.08   # rad/s
@@ -62,7 +62,8 @@ DEFAULT_STATUS_TOPICS = [
 ]
 
 DEFAULT_RUNMISSION_FB_TOPIC = '/omnicare/behavior/run_mission/_action/feedback'
-DEFAULT_ALARM_TOPIC         = ''  # e.g. '/omnicare/navigation/alarm'
+DEFAULT_ALARM_TOPIC         = '/omnicare/hri/alarm'  # e.g. '/omnicare/navigation/alarm'
+DEFAULT_ANTHEM_TOPIC        = '/omnicare/hri/anthem'   # e.g. '/omnicare/hri/anthem'
 # ------------------------------------------
 
 
@@ -92,9 +93,8 @@ class AlertNode(Node):
             self.status_topics = list(param_status) if param_status else []
 
         self.alarm_topic = self.declare_parameter('alarm_topic', DEFAULT_ALARM_TOPIC).value
-        self.runmission_feedback_topic = self.declare_parameter(
-            'runmission_feedback_topic', DEFAULT_RUNMISSION_FB_TOPIC
-        ).value
+        self.runmission_feedback_topic = self.declare_parameter('runmission_feedback_topic', DEFAULT_RUNMISSION_FB_TOPIC).value
+        self.anthem_topic = self.declare_parameter('anthem_topic', DEFAULT_ANTHEM_TOPIC).value
 
         # Serial I/O to the microcontroller
         self.ser = serial.Serial(self.port, self.baud, timeout=0.05)
@@ -127,11 +127,55 @@ class AlertNode(Node):
             self.create_subscription(Bool, self.alarm_topic, self.cb_alarm, 10)
             self.get_logger().info(f'Subscribed alarm: {self.alarm_topic}')
 
+        if self.anthem_topic:
+            self.create_subscription(Bool, self.anthem_topic, self.cb_anthem, 10)
+            self.get_logger().info(f'Subscribed anthem trigger: {self.anthem_topic}')
+
         # Timers
         self.create_timer(0.05, self.tick_logic)           # 20 Hz decision loop
         self.create_timer(self.reinforce_s, self.tick_tx)  # periodic state reinforcement
+        self.create_timer(0.01, self.tick_rx)  # 100 Hz
+    # ----------- Serial RX -----------
+    def tick_rx(self):
+        """Receive the data from MCU."""
+        if self.ser is None:
+            return
+        try:
+            n = self.ser.in_waiting
+            if n > 0:
+                data = self.ser.read(n)  # lê tudo disponível de uma vez
+                for b in data:
+                    self.rx_last = b
+                    self._process_rx_byte(b)
+        except Exception as e:
+            self.get_logger().warning(f"Serial read failed: {e}")
 
+    def _process_rx_byte(self, b: int):
+        """Events comming from MCU."""
+        self.get_logger().info(f"MCU -> byte recebido: 0x{b:02X}")
+        if b == 0x22:
+            # Exemplo: ACK/trigger do MCU
+            self.get_logger().info("MCU -> 0x22 recebido")
+            # Faça algo útil: liberar um wait, limpar erro, etc.
+            # self.error_flag = False
     # ----------- Callbacks -----------
+
+    def cb_anthem(self, msg: Bool):
+        """
+        If data=True, send 'X' (one-shot) to the MCU to play the anthem.
+        This does not change the LED state.
+        """
+        if not msg.data:
+            return
+        if self.ser is None:
+            self.get_logger().warning("Anthem trigger received, but serial is not open.")
+            return
+        try:
+            self.ser.write(b'X')
+            self.get_logger().info("ANTHEM: sent 'X' to MCU.")
+        except Exception as e:
+            self.get_logger().warning(f"Failed to send 'X' to MCU: {e}")
+
     def cb_cmd(self, msg: Twist):
         """
         Detect motion for omni-directional robot:
@@ -174,8 +218,15 @@ class AlertNode(Node):
             self.error_flag = True
 
     def cb_alarm(self, msg: Bool):
-        """Direct alarm channel (Bool). True => Red."""
-        self.error_flag = bool(msg.data)
+        """Direct alarm channel (Bool). True => Alarm on."""
+        if msg is None:
+            return
+        
+        if msg.data == True:
+            self.ser.write(b'E')
+        else:
+            self.ser.write(b'D')
+
 
     # ----------- Decision logic -----------
     def tick_logic(self):

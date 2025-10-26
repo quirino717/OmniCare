@@ -41,7 +41,8 @@ setup(
     entry_points={
         'console_scripts': [
             'alertNode = omnicare_expression.alertNode:main',
-            'expressionsNode = omnicare_expression.expressionsNode:main'
+            'expressionsNode = omnicare_expression.expressionsNode:main',
+            'expressionService = omnicare_expression.expressionService:main',
         ],
     },
 )
