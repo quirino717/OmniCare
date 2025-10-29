@@ -86,21 +86,35 @@ FEI:
 HU_USP:
   real:
     '3':
-      map_path: "config/maps/HU_USP/HU_terceiro_andar.yaml"
-      checkpoints: "HU_USP_terceiro_andar"
-      position:
-        x: -1.5
-        y: -3.5
+      map_path: "config/maps/simulation/Improved_HU_terceiro_andar.yaml"
+      checkpoints: "USP_terceiro_andar"
+      position: 
+        x: -6.596
+        y: 1.188
       orientation:
-        yaw: 1.57
+        yaw: 1.037
+      teleport:
+        position:
+          x: -23.028
+          y: -6.653
+          z: 0.120
+        orientation:
+          yaw: -0.046
     '1':
-      map_path: "config/maps/HU_USP/HU_primeiro_andar.yaml"
-      checkpoints: "HU_USP_primeiro_andar"
+      map_path: "config/maps/simulation/Improved_HU_primeiro_andar.yaml"
+      checkpoints: "USP_primeiro_andar_FirstTryout"
       position:
-        x: -1.5
-        y: -3.5
+        x: -2.87
+        y: 3.239
       orientation:
-        yaw: 1.57  
+        yaw: -3.13
+      teleport:
+        position:
+          x: -1.5
+          y: -3.5
+        orientation:
+          yaw: 1.57
+
   sim:
     '3':
       map_path: "config/maps/simulation/Improved_HU_terceiro_andar.yaml"
@@ -119,12 +133,12 @@ HU_USP:
           yaw: -0.046
     '1':
       map_path: "config/maps/simulation/Improved_HU_primeiro_andar.yaml"
-      checkpoints: "USP_primeiro_andar"
+      checkpoints: "USP_primeiro_andar_FirstTryout"
       position:
-        x: 8.813
-        y: 6.023
+        x: -2.87
+        y: 3.239
       orientation:
-        yaw: 3.13
+        yaw: -3.13
       teleport:
         position:
           x: -1.5
