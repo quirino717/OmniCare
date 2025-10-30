@@ -1,38 +1,3 @@
-# real:
-#   '5':
-#     map_path: "config/maps/FEI/FEI_quintoAndar_firstElevatorImproved.yaml"
-#     x: -4.03
-#     y: -1.35
-#     yaw: 0.95
-#   '4':
-#     map_path: "config/maps/simulation/real_quarto.yaml"
-#     x: 10.0
-#     y: 10.0
-#     yaw: 0.0
-
-# sim:
-#   '5':
-#     map_path: "config/maps/simulation/simulation_quintoAndar_firstElevator.yaml"
-#     position:
-#       x: -4.28662829247774
-#       y: -2.258903559861313
-#     orientation:
-#       x: 0.0
-#       y: 0.0
-#       z: 0.5621281894183031
-#       w: 0.8270501185909475
-#   '4':
-#     map_path: "config/maps/simulation/simulation_quartoAndar_firstElevator.yaml"
-#     position:
-#       x: -4.78
-#       y: 2.89
-#     orientation:
-#       x: 0.0
-#       y: 0.0
-#       z: -0.82
-#       w: 0.57
-
-# # Test
 FEI:
   real:
     '5':
@@ -135,10 +100,10 @@ HU_USP:
       map_path: "config/maps/simulation/Improved_HU_primeiro_andar.yaml"
       checkpoints: "USP_primeiro_andar_FirstTryout"
       position:
-        x: -2.87
-        y: 3.239
+        x: 8.813
+        y: 6.023
       orientation:
-        yaw: -3.13
+        yaw: 3.13
       teleport:
         position:
           x: -1.5
