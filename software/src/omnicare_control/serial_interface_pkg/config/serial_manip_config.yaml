@@ -1,6 +1,6 @@
 manip:
   serial_interface:
     ros__parameters:
-      usb_port_name         : '/dev/stm32-manip'
+      usb_port_name         : '/dev/ttyACM0'
       baud_rate             : 115200
       main_callback_delay_s : 0.01

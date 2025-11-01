@@ -192,13 +192,13 @@ void motor_pid_control_thread_entry(unsigned long thread_input)
 
 
 	while(1){
-		if((limit_switch_state[0] == 1 && velocity_list[0] < 0) ||
-		   ((limit_switch_state[1] == 1 && velocity_list[0] > 0))){
+		if((limit_switch_state[0] == 1 && motors_data[0].set_point_velocity < 0) ||
+		   ((limit_switch_state[1] == 1 && motors_data[0].set_point_velocity > 0))){
 			motors_data[0].set_point_velocity = 0;
 		}
 
-		if((limit_switch_state[2] == 1 && velocity_list[1] < 0) ||
-		   ((limit_switch_state[3] == 1 && velocity_list[1] > 0))){
+		if((limit_switch_state[2] == 1 && motors_data[1].set_point_velocity < 0) ||
+		   ((limit_switch_state[3] == 1 && motors_data[1].set_point_velocity > 0))){
 			motors_data[1].set_point_velocity = 0;
 		}
 

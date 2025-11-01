@@ -17,12 +17,12 @@ def launch_serial_interface(context, *args, **kwargs):
 
     if robot_part == "base":
         print("Launching BASE part...")
-        default_config_path = default_config_path / "serial_interface_base.yam"
+        default_config_path = default_config_path / "serial_base_config.yaml"
         node_namespace = "base"
     
     elif robot_part == "manip":
         print("Launching MANIPULATOR part...")
-        default_config_path = default_config_path / "serial_interface_manip.yam"
+        default_config_path = default_config_path / "serial_manip_config.yaml"
         node_namespace = "manip"
 
     else:

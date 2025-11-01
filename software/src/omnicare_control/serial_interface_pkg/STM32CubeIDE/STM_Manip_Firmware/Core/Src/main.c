@@ -760,10 +760,10 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
 		case GPIO_PIN_10:
 			limit_switch_state[1] = 0;
 			break;
-		case GPIO_PIN_10:
+		case GPIO_PIN_11:
 			limit_switch_state[2] = 0;
 			break;
-		case GPIO_PIN_10:
+		case GPIO_PIN_12:
 			limit_switch_state[3] = 0;
 			break;
 	}
@@ -777,10 +777,10 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin){
 		case GPIO_PIN_10:
 			limit_switch_state[1] = 1;
 			break;
-		case GPIO_PIN_10:
+		case GPIO_PIN_11:
 			limit_switch_state[2] = 1;
 			break;
-		case GPIO_PIN_10:
+		case GPIO_PIN_12:
 			limit_switch_state[3] = 1;
 			break;
 	}

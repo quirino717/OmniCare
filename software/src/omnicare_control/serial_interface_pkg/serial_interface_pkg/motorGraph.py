@@ -6,7 +6,7 @@ import matplotlib.animation as animation
 from collections import deque
 
 # Configurar a porta serial
-ser = serial.Serial('/dev/usb-user', 115200, timeout=1)
+ser = serial.Serial('/dev/stm-user', 115200, timeout=1)
 
 # Buffers de dados
 max_len = 250
