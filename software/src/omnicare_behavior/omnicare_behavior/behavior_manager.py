@@ -279,6 +279,17 @@ class ElevatorBehaviorManager(Node):
             direction=self.direction  # Direction to align ("Left", "Right", or None)
         )
 
+        if self.simulation:
+            # Teleport the robot to the correct floor in simulation
+            teleport_robot( 
+                world=self.world, # Pass the world parameter
+                floor=self.target_floor,  # Which floor to teleport
+                node=self, # Pass the current node instance
+                teleport_robot_client=self.teleport_robot # Pass the TeleportFloor client instance
+            )
+            self.start_navigation = False # Flag to alert the navigation is already started
+            self.current_state = 'FLOOR_NAVIGATION'
+
         # Watchdog keep-alive
         self.watchdog.keep_alive()
 
