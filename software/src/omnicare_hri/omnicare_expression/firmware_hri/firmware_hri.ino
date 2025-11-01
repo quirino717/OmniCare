@@ -34,6 +34,7 @@ Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Base colors used in patterns; intensity is applied later via gamma scaling
 const uint8_t BLUE_RGB[3]   = {  0,   0, 255};
 const uint8_t YELLOW_RGB[3] = {255, 180,   0};
+const uint8_t GREEN_RGB[3]  = {  0, 255,   0};
 const uint8_t RED_RGB[3]    = {255,   0,   0};
 
 // --------------- Breathing (B/Y) configuration --------------------
@@ -363,7 +364,11 @@ void loop() {
         anim_breath(BLUE_RGB);
       } else if (current == 'Y') {
         anim_breath(YELLOW_RGB);
-      } else { // 'R'
+      }
+      else if (current == 'G'){
+        anim_breath(GREEN_RGB);   // success: breathing green
+      }
+      else { // 'R'
         // Fast attention blink using a simple toggle at RED_BLINK_MS
         if (now - last_toggle >= RED_BLINK_MS) {
           red_on = !red_on;
