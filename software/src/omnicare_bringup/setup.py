@@ -38,6 +38,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'rtc = omnicare_bringup.rtc:main',
+            'publish_time = omnicare_bringup.publish_time:main'
         ],
     },
 )
