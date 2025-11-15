@@ -332,7 +332,7 @@ class ElevatorBehaviorManager(Node):
                 self.detect_counter = 0
 
         # If the detected floor matches the target floor consistently, consider it confirmed
-        if self.detect_counter >= 5 and self.start_navigation:
+        if self.detect_counter >= 8 and self.start_navigation:
             self.get_logger().info("Detecção: Chegou no andar correto!")
             self.detect_counter = 0  # Reset the counter
 
