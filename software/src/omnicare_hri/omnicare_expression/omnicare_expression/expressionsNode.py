@@ -9,6 +9,9 @@ from omnicare_msgs.srv import OmniMove, MoveArm, LEDandBuzz
 
 from ament_index_python.packages import get_package_share_directory
 
+os.environ["DISPLAY"] = ":1"
+os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"  # ajuste o UID se for outro
+
 PKG = 'omnicare_expression'
 SHARE_DIR = get_package_share_directory(PKG)
 FACE_DIR = os.path.join(SHARE_DIR, 'config')
@@ -190,7 +193,7 @@ class ExpressionsPlayer(Node):
                 self.get_logger().error('Serviço /omnicare/expression/move_omni indisponível.')
                 return
             req = OmniMove.Request()
-            req.speed = 0.8
+            req.speed = 5.0
             req.duration = 15.0
             req.frequency = 0.15
             req.axis = 'y'
@@ -231,6 +234,10 @@ class ExpressionsPlayer(Node):
         if t < 0:
             self.get_logger().info(f"time: {t}")
             return
+        
+        if t >= 56000: self.player.audio_set_volume(50)
+        else: self.player.audio_set_volume(100)
+
         
         # 1) Quando passar do pre_idle_anchor -> entrar no loop do idle
         if not self.anchor_fired:
