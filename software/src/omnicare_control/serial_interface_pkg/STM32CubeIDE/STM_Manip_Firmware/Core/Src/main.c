@@ -131,8 +131,6 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
-  Init_Motors_Data();
-
   /* USER CODE END Init */
 
   /* Configure the System Power */
@@ -706,12 +704,32 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pins : PC10 PC11 PC12 */
   GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PD2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI10_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI11_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI11_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI12_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI12_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -731,7 +749,45 @@ PUTCHAR_PROTOTYPE
 //  HAL_UART_Transmit(&huart1, (uint8_t *)"\r", 2, 0xFFFF);
 
   return ch;
-}/* USER CODE END 4 */
+}
+
+
+void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin){
+	switch(GPIO_Pin){
+		case GPIO_PIN_2:
+			limit_switch_state[0] = 0;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[1] = 0;
+			break;
+		case GPIO_PIN_11:
+			limit_switch_state[2] = 0;
+			break;
+		case GPIO_PIN_12:
+			limit_switch_state[3] = 0;
+			break;
+	}
+}
+
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin){
+	switch(GPIO_Pin){
+		case GPIO_PIN_2:
+			limit_switch_state[0] = 1;
+			break;
+		case GPIO_PIN_10:
+			limit_switch_state[1] = 1;
+			break;
+		case GPIO_PIN_11:
+			limit_switch_state[2] = 1;
+			break;
+		case GPIO_PIN_12:
+			limit_switch_state[3] = 1;
+			break;
+	}
+}
+
+
+/* USER CODE END 4 */
 
 /**
   * @brief  Period elapsed callback in non blocking mode

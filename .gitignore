@@ -1,7 +1,7 @@
 # Gerados pelo ROS
-*/build
-*/install
-*/log
+**/build
+**/install
+**/log
 
 # Gerados pelo VS Code 
 */.vscode

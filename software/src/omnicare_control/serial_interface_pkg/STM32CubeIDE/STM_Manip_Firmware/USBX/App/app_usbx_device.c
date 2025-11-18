@@ -189,6 +189,10 @@ UINT MX_USBX_Device_Init(VOID *memory_ptr)
   tx_byte_allocate(byte_pool, (VOID **)&pointer, 1024, TX_NO_WAIT);
   /* Create the UX TX thread */
   tx_thread_create(&ux_cdc_write_thread, "cdc_acm_write_usbx_app_thread_entry", usbx_cdc_acm_write_thread_entry, 1, pointer, 1025, 20, 20, TX_NO_TIME_SLICE, TX_AUTO_START);
+  /* Allocate memory for the UX TX thread */
+  tx_byte_allocate(byte_pool, (VOID **)&pointer, 1024, TX_NO_WAIT);
+  /* Create the UX TX thread */
+  tx_thread_create(&motor_control_thread, "cdc_motor_pid_control_thread_entry", motor_pid_control_thread_entry, 1, pointer, 1026, 20, 20, TX_NO_TIME_SLICE, TX_AUTO_START);
   /* USER CODE END MX_USBX_Device_Init1 */
 
   return ret;

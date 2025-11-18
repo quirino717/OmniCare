@@ -5,9 +5,6 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-import subprocess
-import platform
-
 def generate_launch_description():
     floor_detector_dir = get_package_share_path('floor_detector')
     default_config_path = floor_detector_dir / 'config' / 'floor_detector_config.yaml'
