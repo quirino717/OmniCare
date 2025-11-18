@@ -24,6 +24,8 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -53,7 +55,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 
 bool limit_switch_state[4] = {false, false, false, false};
-int16_t motorsPWM[3] = {-100, -100, -100};
+int16_t motorsPWM[3] = {0, 0, 0};
 
 // UART buffers e flags
 static uint8_t rx_byte;
@@ -71,71 +73,66 @@ static void MX_TIM22_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
-//void My_UART_Start_Receive_IT(void);
-//bool UART_MessageReady(void);
-//char *UART_GetMessage(void);
 void processCommand(const char *cmd);
 void computeMotors();
+void send_limit_switch_state(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//void My_UART_Start_Receive_IT(void)
-//{
-//	rx_index = 0;
-//	message_ready = false;
-//	HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
-//}
-//
-//bool UART_MessageReady(void)
-//{
-//	return message_ready;
-//}
-//
-//char *UART_GetMessage(void)
-//{
-//	message_ready = false;
-//	return (char *)rx_buffer;
-//}
-//
-//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-//{
-//	if (huart->Instance == USART2)
-//	{
-//		if (!message_ready)
-//		{
-//			if (rx_byte == '\n')
-//			{
-//				rx_buffer[rx_index] = '\0';
-//				message_ready = true;
-//				rx_index = 0;
-//			}
-//			else
-//			{
-//				rx_buffer[rx_index++] = rx_byte;
-//				if (rx_index >= RX_BUFFER_SIZE)
-//					rx_index = 0;
-//			}
-//		}
-//
-//		HAL_UART_Receive_IT(&huart2, &rx_byte, 1);
-//	}
-//}
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        if (rx_byte == '\n' || rx_byte == '\r')  // Detectou fim da mensagem
+        {
+            rx_buffer[rx_index] = '\0'; // Finaliza string
+            rx_index = 0;               // Reinicia índice
+
+            processCommand(rx_buffer);
+        }
+        else
+        {
+            // Adiciona ao buffer se couber
+            if (rx_index < RX_BUFFER_SIZE - 1)
+            {
+                rx_buffer[rx_index++] = rx_byte;
+            }
+        }
+
+        HAL_UART_Receive_IT(&huart2, &rx_byte, sizeof(rx_byte));
+    }
+}
+
+void send_limit_switch_state(void)
+{
+    char msg[10];
+
+    snprintf(msg, sizeof(msg),
+             "%d %d %d %d\n",
+             limit_switch_state[0],
+             limit_switch_state[1],
+             limit_switch_state[2],
+             limit_switch_state[3]);
+
+    HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
 
 void processCommand(const char *cmd)
 {
 	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
 
-//	if(cmd[0] == 'm'){
-//		char *token = strtok(cmd, " ");
-//		char _ = token[0];
-//		for (int i = 0; i < 3; i++) {
-//		   token = strtok(NULL, " ");
-//		   motorsPWM[i] = (int16_t)atoi(token);
-//		}
-//	}
+	if(cmd[0] == 'm'){
+		char *token = strtok(cmd, " ");
+		char _ = token[0];
+		for (int i = 0; i < 3; i++) {
+		   token = strtok(NULL, " ");
+		   motorsPWM[i] = (int16_t)atoi(token);
+		}
+	}
 }
 
 void computeMotors(){
@@ -150,8 +147,16 @@ void computeMotors(){
 	if(pwm_positive > 255) pwm_positive = 255;
 	if(pwm_negative > 255) pwm_negative = 255;
 
-	TIM2->CCR1 = pwm_positive;
-	TIM2->CCR2 = pwm_negative;
+	if(pwm_positive > 0 && limit_switch_state[0] == 1){
+		pwm_positive = 0;
+		motorsPWM[0] = 0;
+	}
+	if(pwm_negative > 0 && limit_switch_state[1] == 1){
+		pwm_positive = 0;
+		motorsPWM[0] = 0;
+	}
+	TIM2->CCR1 = pwm_negative;
+	TIM2->CCR2 = pwm_positive;
 
 
 
@@ -166,8 +171,18 @@ void computeMotors(){
 	if(pwm_positive > 255) pwm_positive = 255;
 	if(pwm_negative > 255) pwm_negative = 255;
 
-	TIM2->CCR3 = pwm_positive;
-	TIM2->CCR4 = pwm_negative;
+	if(pwm_positive > 0 && limit_switch_state[3] == 1){
+		pwm_positive = 0;
+		motorsPWM[1] = 0;
+	}
+	if(pwm_negative > 0 && limit_switch_state[2] == 1){
+		pwm_positive = 0;
+		motorsPWM[1] = 0;
+	}
+
+
+	TIM22->CCR1 = pwm_positive;
+	TIM22->CCR2 = pwm_negative;
 
 
 
@@ -182,8 +197,8 @@ void computeMotors(){
 	if(pwm_positive > 255) pwm_positive = 255;
 	if(pwm_negative > 255) pwm_negative = 255;
 
-	TIM22->CCR1 = pwm_positive;
-	TIM22->CCR2 = pwm_negative;
+	TIM2->CCR3 = pwm_positive;
+	TIM2->CCR4 = pwm_negative;
 }
 
 /* USER CODE END 0 */
@@ -222,18 +237,22 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-//  My_UART_Start_Receive_IT();
+  HAL_UART_Receive_IT(&huart2, &rx_byte, sizeof(rx_byte));
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint64_t time_last_msg_send = HAL_GetTick();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	computeMotors();
+	if(HAL_GetTick() - time_last_msg_send > 500){
+		send_limit_switch_state();
+	}
   }
   /* USER CODE END 3 */
 }
@@ -383,11 +402,11 @@ static void MX_TIM22_Init(void)
 
   /* USER CODE END TIM22_Init 1 */
   htim22.Instance = TIM22;
-  htim22.Init.Prescaler = 0;
+  htim22.Init.Prescaler = 31;
   htim22.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim22.Init.Period = 65535;
+  htim22.Init.Period = 255;
   htim22.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_PWM_Init(&htim22) != HAL_OK)
   {
     Error_Handler();
