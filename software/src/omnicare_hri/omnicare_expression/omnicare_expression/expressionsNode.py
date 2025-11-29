@@ -61,9 +61,10 @@ class ExpressionsPlayer(Node):
         self._fired_ids = set()          # ids (índices) de eventos já disparados
         self.exit_idle_pending = False     # pedido para sair do idle ao fim do ciclo atual
         self.resume_target_ms = None       # para onde pular quando sair do idle
-        self.count_state = 1
+        self.count_state = 0
 
         # estado de timeline/idle
+        self.first_time = True
         self.anchor_fired = False
         self.idle_loop_active = False
         self.resume_ms = None  # para onde continuar após o idle (idle_end)
@@ -115,6 +116,7 @@ class ExpressionsPlayer(Node):
         media.add_option(":start-time=2.0")      
         self.player.set_media(media)
         self.player.play()
+
 
     def _seek_ms(self, ms: int):
         ok = self.player.set_time(ms)
@@ -193,7 +195,7 @@ class ExpressionsPlayer(Node):
                 self.get_logger().error('Serviço /omnicare/expression/move_omni indisponível.')
                 return
             req = OmniMove.Request()
-            req.speed = 5.0
+            req.speed = 2.5
             req.duration = 15.0
             req.frequency = 0.15
             req.axis = 'y'
@@ -205,7 +207,7 @@ class ExpressionsPlayer(Node):
                 return
             req = MoveArm.Request()
             req.action = "Hello"
-            req.duration = 10.0
+            req.duration = 15.0
             self.move_arm_client.call_async(req)
         elif event_id == "led_and_buzz_anchor":
             if not self.buzzer_client.wait_for_service(timeout_sec=2.0):
@@ -221,6 +223,11 @@ class ExpressionsPlayer(Node):
     
     # ==== controle principal ====
     def _tick(self):
+
+        # Variables
+        idle_start_ms = self._s_to_ms(LABELS["idle_loop"])
+        idle_end_ms   = self._s_to_ms(LABELS["idle_end"]) if not self.exit_idle_pending else self._s_to_ms(LABELS["transition_end"])
+
         state = self.player.get_state()
         if state != vlc.State.Playing:
             # aplicar seek pendente assim que possível
@@ -235,8 +242,18 @@ class ExpressionsPlayer(Node):
             self.get_logger().info(f"time: {t}")
             return
         
-        if t >= 56000: self.player.audio_set_volume(50)
+        if t >= 56000: self.player.audio_set_volume(25)
         else: self.player.audio_set_volume(100)
+
+        # Para quando começar o video, ele ficar em idle esperando para se apresentar
+        if (t > 200 and self.first_time):
+            self.anchor_fired = True
+            self.idle_loop_active = True
+            self.resume_ms = self._s_to_ms(LABELS["idle_end"])  # para onde continuar depois do idle
+            self._seek_ms(idle_start_ms)
+            self.first_time = False
+            return 
+
 
         
         # 1) Quando passar do pre_idle_anchor -> entrar no loop do idle
@@ -263,8 +280,6 @@ class ExpressionsPlayer(Node):
                 
 
         # 2) Se estiver em loop do idle, mantenha looping
-        idle_start_ms = self._s_to_ms(LABELS["idle_loop"])
-        idle_end_ms   = self._s_to_ms(LABELS["idle_end"]) if not self.exit_idle_pending else self._s_to_ms(LABELS["transition_end"])
         if self.idle_loop_active:
 
             self.get_logger().info("In in looping")
@@ -302,6 +317,7 @@ class ExpressionsPlayer(Node):
             self.get_logger().info("In the endless loop")
             self._seek_ms(idle_start_ms)
             self.idle_loop_active = True
+
 
         
 def main():
