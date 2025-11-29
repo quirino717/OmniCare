@@ -152,7 +152,7 @@ struct Anthem {
 
   // Gap between notes and safety cap on total anthem time
   static const unsigned long GAP_MS        = 50;
-  static const unsigned long MAX_ANTHEM_MS = 15000;
+  static const unsigned long MAX_ANTHEM_MS = 22000;
 
   // Query
   static inline bool isPlaying() { return playing; }
