@@ -98,7 +98,57 @@ HU_USP:
           yaw: -0.046
     '1':
       map_path: "config/maps/simulation/Improved_HU_primeiro_andar.yaml"
-      checkpoints: "USP_primeiro_andar_FirstTryout"
+      checkpoints: "USP_primeiro_andar"
+      position:
+        x: 8.813
+        y: 6.023
+      orientation:
+        yaw: 3.13
+      teleport:
+        position:
+          x: -1.5
+          y: -3.5
+        orientation:
+          yaw: 1.57
+
+# Presentation -> Esse mundo é apenas para apresentação da banca
+presentation:
+  real:
+    '5':
+      map_path: "config/maps/FEI/FEI_presentation.yaml"
+      checkpoints: "presentation"
+      position:
+        x: 2.57
+        y: -0.29  
+      orientation:
+        yaw: 2.45
+    '4':
+      map_path: "config/maps/FEI/FEI_quartoAndar_elevadorManutencao.yaml"
+      checkpoints: "quarto_andar_manutencao"
+      position:
+        x: -5.04
+        y: 12.61
+      orientation:
+        yaw: -1.21  
+  sim:
+    '3':
+      map_path: "config/maps/simulation/Improved_HU_terceiro_andar.yaml"
+      checkpoints: "USP_terceiro_andar"
+      position: 
+        x: -6.596
+        y: 1.188
+      orientation:
+        yaw: 0.366
+      teleport:
+        position:
+          x: -23.028
+          y: -6.653
+          z: 0.120
+        orientation:
+          yaw: -0.046
+    '1':
+      map_path: "config/maps/simulation/Improved_HU_primeiro_andar.yaml"
+      checkpoints: "USP_primeiro_andar"
       position:
         x: 8.813
         y: 6.023
