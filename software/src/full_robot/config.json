@@ -1,0 +1,7 @@
+{
+    "url": "https://cad.onshape.com/documents/247f053335409b137ca0a3fa/w/ba9bac7773eb7e8311a3657d/e/53a5758d6eaac2842871f233",
+    "output_format": "urdf",
+    "output_filename": "robot",
+    "assets_dir": "meshes",
+    "robot_name": "robot"
+}
