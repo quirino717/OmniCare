@@ -4,17 +4,17 @@
 <robot name="my-robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:include filename="$(find full_robot)/urdf/manipulator.xacro"/>
-
-  <!-- Link base -->
+  
   <link name="base">
     <inertial>
       <origin xyz="7.15175e-09 0.00387039 0.176709" rpy="0 0 0"/>
       <mass value="14.1165"/>
       <inertia ixx="0.712488" ixy="-3.32307e-08" ixz="2.04252e-08" iyy="0.743813" iyz="0.0147188" izz="0.588331"/>
     </inertial>
-    <!-- Part imu -->
+  </link>
+  <link name="imu_link">
     <visual>
-      <origin xyz="-2.36447e-17 -5.80614e-17 0.083" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/imu.stl"/>
       </geometry>
@@ -23,14 +23,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="-2.36447e-17 -5.80614e-17 0.083" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/imu.stl"/>
       </geometry>
     </collision>
-    <!-- Part lidar -->
+  </link>
+  <joint name="base_to_imu" type="fixed">
+    <parent link="base"/>
+    <child link="imu_link"/>
+    <origin xyz="-2.36447e-17 -5.80614e-17 0.083" rpy="0 0 6.12323e-17"/>
+  </joint>
+  <link name="lidar_link">
     <visual>
-      <origin xyz="-2.24826e-17 -6.22208e-17 0.092" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/lidar.stl"/>
       </geometry>
@@ -39,14 +45,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="-2.24826e-17 -6.22208e-17 0.092" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/lidar.stl"/>
       </geometry>
     </collision>
-    <!-- Part motor -->
+  </link>
+  <joint name="base_to_lidar" type="fixed">
+    <parent link="base"/>
+    <child link="lidar_link"/>
+    <origin xyz="-2.24826e-17 -6.22208e-17 0.092" rpy="0 0 6.12323e-17"/>
+  </joint>
+  <link name="motor_link">
     <visual>
-      <origin xyz="0 0.155075 -0.04535" rpy="0 -0 -3.14159"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/motor.stl"/>
       </geometry>
@@ -55,46 +67,64 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="0 0.155075 -0.04535" rpy="0 -0 -3.14159"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/motor.stl"/>
       </geometry>
     </collision>
-    <!-- Part mdf_motores -->
+  </link>
+  <joint name="base_to_motor" type="fixed">
+    <parent link="base"/>
+    <child link="motor_link"/>
+    <origin xyz="0 0.155075 -0.04535" rpy="0 0 -3.14159"/>
+  </joint>
+  <link name="mdf_motores_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf_motores.stl"/>
       </geometry>
       <material name="mdf_motores_material">
-        <color rgba="0.901961 0.835294 0.67451 1"/>
+        <color rgba="0.84 0.78 0.63 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf_motores.stl"/>
       </geometry>
     </collision>
-    <!-- Part mdf_tampa -->
+  </link>
+  <joint name="base_to_mdf_motores" type="fixed">
+    <parent link="base"/>
+    <child link="mdf_motores_link"/>
+    <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="mdf_tampa_link">
     <visual>
-      <origin xyz="-1.54582e-17 -4.16334e-17 0.4975" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf_tampa.stl"/>
       </geometry>
       <material name="mdf_tampa_material">
-        <color rgba="0.901961 0.835294 0.67451 1"/>
+        <color rgba="0.84 0.78 0.63 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="-1.54582e-17 -4.16334e-17 0.4975" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf_tampa.stl"/>
       </geometry>
     </collision>
-    <!-- Part capa_baixo -->
+  </link>
+  <joint name="base_to_mdf_tampa" type="fixed">
+    <parent link="base"/>
+    <child link="mdf_tampa_link"/>
+    <origin xyz="-1.54582e-17 -4.16334e-17 0.4975" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="capa_baixo_link">
     <visual>
-      <origin xyz="6.93889e-18 -4.16334e-17 -0.078" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/capa_baixo.stl"/>
       </geometry>
@@ -103,46 +133,64 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="6.93889e-18 -4.16334e-17 -0.078" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/capa_baixo.stl"/>
       </geometry>
     </collision>
-    <!-- Part mdf -->
+  </link>
+  <joint name="base_to_capa_baixo" type="fixed">
+    <parent link="base"/>
+    <child link="capa_baixo_link"/>
+    <origin xyz="6.93889e-18 -4.16334e-17 -0.078" rpy="0 0 0"/>
+  </joint>
+  <link name="mdf_link">
     <visual>
-      <origin xyz="1.54074e-33 -1.38778e-17 0.086" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf.stl"/>
       </geometry>
       <material name="mdf_material">
-        <color rgba="0.901961 0.835294 0.67451 1"/>
+        <color rgba="0.84 0.78 0.63 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="1.54074e-33 -1.38778e-17 0.086" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf.stl"/>
       </geometry>
     </collision>
-    <!-- Part mdf_2 -->
+  </link>
+  <joint name="base_to_mdf" type="fixed">
+    <parent link="base"/>
+    <child link="mdf_link"/>
+    <origin xyz="1.54074e-33 -1.38778e-17 0.086" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="mdf_2_link">
     <visual>
-      <origin xyz="1.54074e-33 -1.38778e-17 0.132" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf.stl"/>
       </geometry>
       <material name="mdf_2_material">
-        <color rgba="0.901961 0.835294 0.67451 1"/>
+        <color rgba="0.84 0.78 0.63 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="1.54074e-33 -1.38778e-17 0.132" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf.stl"/>
       </geometry>
     </collision>
-    <!-- Part led -->
+  </link>
+  <joint name="base_to_mdf_2" type="fixed">
+    <parent link="base"/>
+    <child link="mdf_2_link"/>
+    <origin xyz="1.54074e-33 -1.38778e-17 0.132" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="led_link">
     <visual>
-      <origin xyz="6.93889e-18 -4.16334e-17 0.142" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/led.stl"/>
       </geometry>
@@ -151,14 +199,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="6.93889e-18 -4.16334e-17 0.142" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/led.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_motores -->
+  </link>
+  <joint name="base_to_led" type="fixed">
+    <parent link="base"/>
+    <child link="led_link"/>
+    <origin xyz="6.93889e-18 -4.16334e-17 0.142" rpy="0 0 0"/>
+  </joint>
+  <link name="perfil_motores_link">
     <visual>
-      <origin xyz="0 0.207375 -0.01" rpy="0 -0 -3.14159"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_motores.stl"/>
       </geometry>
@@ -167,14 +221,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="0 0.207375 -0.01" rpy="0 -0 -3.14159"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_motores.stl"/>
       </geometry>
     </collision>
-    <!-- Part capa_cima -->
+  </link>
+  <joint name="base_to_perfil_motores" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_motores_link"/>
+    <origin xyz="0 0.207375 -0.01" rpy="0 0 -3.14159"/>
+  </joint>
+  <link name="capa_cima_link">
     <visual>
-      <origin xyz="6.93889e-18 -4.16334e-17 0.142" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/capa_cima.stl"/>
       </geometry>
@@ -183,14 +243,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="6.93889e-18 -4.16334e-17 0.142" rpy="0 -0 6.12323e-17"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/capa_cima.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_coluna -->
+  </link>
+  <joint name="base_to_capa_cima" type="fixed">
+    <parent link="base"/>
+    <child link="capa_cima_link"/>
+    <origin xyz="6.93889e-18 -4.16334e-17 0.142" rpy="0 0 0"/>
+  </joint>
+  <link name="perfil_coluna_link">
     <visual>
-      <origin xyz="1.92083e-17 0.200375 0.107" rpy="0 -0 2.10573e-16"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna.stl"/>
       </geometry>
@@ -199,14 +265,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="1.92083e-17 0.200375 0.107" rpy="0 -0 2.10573e-16"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_motores_2 -->
+  </link>
+  <joint name="base_to_perfil_coluna" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_coluna_link"/>
+    <origin xyz="1.92083e-17 0.200375 0.107" rpy="0 0 0"/>
+  </joint>
+  <link name="perfil_motores_2_link">
     <visual>
-      <origin xyz="-0.179592 -0.103688 -0.01" rpy="0 -0 -1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_motores.stl"/>
       </geometry>
@@ -215,30 +287,42 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.179592 -0.103688 -0.01" rpy="0 -0 -1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_motores.stl"/>
       </geometry>
     </collision>
-    <!-- Part mdf_3 -->
+  </link>
+  <joint name="base_to_perfil_motores_2" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_motores_2_link"/>
+    <origin xyz="-0.179592 -0.103688 -0.01" rpy="0 0 -1.0472"/>
+  </joint>
+  <link name="mdf_3_link">
     <visual>
-      <origin xyz="1.54074e-33 -1.38778e-17 0.208" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf.stl"/>
       </geometry>
       <material name="mdf_3_material">
-        <color rgba="0.901961 0.835294 0.67451 1"/>
+        <color rgba="0.84 0.78 0.63 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="1.54074e-33 -1.38778e-17 0.208" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf.stl"/>
       </geometry>
     </collision>
-    <!-- Part motor_2 -->
+  </link>
+  <joint name="base_to_mdf_3" type="fixed">
+    <parent link="base"/>
+    <child link="mdf_3_link"/>
+    <origin xyz="1.54074e-33 -1.38778e-17 0.208" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="motor_2_link">
     <visual>
-      <origin xyz="0.134299 -0.0775375 -0.04535" rpy="0 -0 1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/motor.stl"/>
       </geometry>
@@ -247,14 +331,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="0.134299 -0.0775375 -0.04535" rpy="0 -0 1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/motor.stl"/>
       </geometry>
     </collision>
-    <!-- Part motor_3 -->
+  </link>
+  <joint name="base_to_motor_2" type="fixed">
+    <parent link="base"/>
+    <child link="motor_2_link"/>
+    <origin xyz="0.134299 -0.0775375 -0.04535" rpy="0 0 1.0472"/>
+  </joint>
+  <link name="motor_3_link">
     <visual>
-      <origin xyz="-0.134299 -0.0775375 -0.04535" rpy="0 -0 -1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/motor.stl"/>
       </geometry>
@@ -263,14 +353,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.134299 -0.0775375 -0.04535" rpy="0 -0 -1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/motor.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_coluna_2 -->
+  </link>
+  <joint name="base_to_motor_3" type="fixed">
+    <parent link="base"/>
+    <child link="motor_3_link"/>
+    <origin xyz="-0.134299 -0.0775375 -0.04535" rpy="0 0 -1.0472"/>
+  </joint>
+  <link name="perfil_coluna_2_link">
     <visual>
-      <origin xyz="0.17353 -0.100188 0.25175" rpy="0 -0 1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna__2.stl"/>
       </geometry>
@@ -279,14 +375,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="0.17353 -0.100188 0.25175" rpy="0 -0 1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna__2.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_coluna_3 -->
+  </link>
+  <joint name="base_to_perfil_coluna_2" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_coluna_2_link"/>
+    <origin xyz="0.17353 -0.100188 0.25175" rpy="0 0 1.0472"/>
+  </joint>
+  <link name="perfil_coluna_3_link">
     <visual>
-      <origin xyz="-0.17353 -0.100188 0.25175" rpy="0 -0 -1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna__2.stl"/>
       </geometry>
@@ -295,14 +397,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="-0.17353 -0.100188 0.25175" rpy="0 -0 -1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna__2.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_motores_3 -->
+  </link>
+  <joint name="base_to_perfil_coluna_3" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_coluna_3_link"/>
+    <origin xyz="-0.17353 -0.100188 0.25175" rpy="0 0 -1.0472"/>
+  </joint>
+  <link name="perfil_motores_3_link">
     <visual>
-      <origin xyz="0.179592 -0.103688 -0.01" rpy="0 -0 1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_motores.stl"/>
       </geometry>
@@ -311,14 +419,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="0.179592 -0.103688 -0.01" rpy="0 -0 1.0472"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_motores.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_coluna_carga -->
+  </link>
+  <joint name="base_to_perfil_motores_3" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_motores_3_link"/>
+    <origin xyz="0.179592 -0.103688 -0.01" rpy="0 0 1.0472"/>
+  </joint>
+  <link name="perfil_coluna_carga_link">
     <visual>
-      <origin xyz="5.01335e-14 4.25077e-14 0.214" rpy="0 -0 -3.14159"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna_carga.stl"/>
       </geometry>
@@ -327,14 +441,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="5.01335e-14 4.25077e-14 0.214" rpy="0 -0 -3.14159"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna_carga.stl"/>
       </geometry>
     </collision>
-    <!-- Part capa_carga -->
+  </link>
+  <joint name="base_to_perfil_coluna_carga" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_coluna_carga_link"/>
+    <origin xyz="5.01335e-14 4.25077e-14 0.214" rpy="0 0 -3.14159"/>
+  </joint>
+  <link name="capa_carga_link">
     <visual>
-      <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/capa_carga.stl"/>
       </geometry>
@@ -343,14 +463,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/capa_carga.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_coluna_carga_2 -->
+  </link>
+  <joint name="base_to_capa_carga" type="fixed">
+    <parent link="base"/>
+    <child link="capa_carga_link"/>
+    <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="perfil_coluna_carga_2_link">
     <visual>
-      <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna_carga.stl"/>
       </geometry>
@@ -359,14 +485,20 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna_carga.stl"/>
       </geometry>
     </collision>
-    <!-- Part perfil_coluna_carga_3 -->
+  </link>
+  <joint name="base_to_perfil_coluna_carga_2" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_coluna_carga_2_link"/>
+    <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="perfil_coluna_carga_3_link">
     <visual>
-      <origin xyz="0.48 -7.1487e-15 0.214" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna_carga.stl"/>
       </geometry>
@@ -375,45 +507,63 @@
       </material>
     </visual>
     <collision>
-      <origin xyz="0.48 -7.1487e-15 0.214" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/perfil_coluna_carga.stl"/>
       </geometry>
     </collision>
-    <!-- Part mdf_carga -->
+  </link>
+  <joint name="base_to_perfil_coluna_carga_3" type="fixed">
+    <parent link="base"/>
+    <child link="perfil_coluna_carga_3_link"/>
+    <origin xyz="0.48 -7.1487e-15 0.214" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="mdf_carga_link">
     <visual>
-      <origin xyz="6.245e-17 9.71445e-17 0.4975" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf_carga.stl"/>
       </geometry>
       <material name="mdf_carga_material">
-        <color rgba="0.901961 0.835294 0.67451 1"/>
+        <color rgba="0.84 0.78 0.63 1.0"/>
       </material>
     </visual>
     <collision>
-      <origin xyz="6.245e-17 9.71445e-17 0.4975" rpy="0 -0 -1.5708"/>
-      <geometry>
-        <mesh filename="file://$(find full_robot)/assets/mdf_carga.stl"/>
-      </geometry>
-    </collision>
-    <!-- Part mdf_carga_2 -->
-    <visual>
-      <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 -0 -1.5708"/>
-      <geometry>
-        <mesh filename="file://$(find full_robot)/assets/mdf_carga.stl"/>
-      </geometry>
-      <material name="mdf_carga_2_material">
-        <color rgba="0.901961 0.835294 0.67451 1"/>
-      </material>
-    </visual>
-    <collision>
-      <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 -0 -1.5708"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find full_robot)/assets/mdf_carga.stl"/>
       </geometry>
     </collision>
   </link>
-  <!-- Link roda -->
+  <joint name="base_to_mdf_carga" type="fixed">
+    <parent link="base"/>
+    <child link="mdf_carga_link"/>
+    <origin xyz="6.245e-17 9.71445e-17 0.4975" rpy="0 0 -1.5708"/>
+  </joint>
+  <link name="mdf_carga_2_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find full_robot)/assets/mdf_carga.stl"/>
+      </geometry>
+      <material name="mdf_carga_2_material">
+        <color rgba="0.84 0.78 0.63 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find full_robot)/assets/mdf_carga.stl"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="base_to_mdf_carga_2" type="fixed">
+    <parent link="base"/>
+    <child link="mdf_carga_2_link"/>
+    <origin xyz="6.245e-17 9.71445e-17 0.214" rpy="0 0 -1.5708"/>
+  </joint>
+
+    <!-- Link roda -->
   <link name="roda">
     <inertial>
       <origin xyz="2.51575e-17 -5.10809e-18 -0.0362488" rpy="0 0 0"/>
@@ -437,6 +587,7 @@
       </geometry>
     </collision>
   </link>
+
   <!-- Link rolete -->
   <link name="rolete">
     <inertial>
@@ -451,7 +602,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -483,7 +634,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_2_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -515,7 +666,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_3_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -547,7 +698,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_4_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -579,7 +730,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_5_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -611,7 +762,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_6_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -643,7 +794,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_7_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -675,7 +826,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_8_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -707,7 +858,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_9_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -739,7 +890,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_10_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -771,7 +922,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_11_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -803,7 +954,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_12_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -843,7 +994,7 @@
         <mesh filename="file://$(find full_robot)/assets/roda.stl"/>
       </geometry>
       <material name="roda_2_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -867,7 +1018,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_13_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -899,7 +1050,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_14_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -931,7 +1082,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_15_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -963,7 +1114,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_16_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -995,7 +1146,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_17_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1027,7 +1178,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_18_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1059,7 +1210,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_19_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1091,7 +1242,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_20_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1123,7 +1274,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_21_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1155,7 +1306,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_22_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1187,7 +1338,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_23_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1219,7 +1370,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_24_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1259,7 +1410,7 @@
         <mesh filename="file://$(find full_robot)/assets/roda.stl"/>
       </geometry>
       <material name="roda_3_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1283,7 +1434,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_25_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1315,7 +1466,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_26_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1347,7 +1498,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_27_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1379,7 +1530,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_28_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1411,7 +1562,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_29_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1443,7 +1594,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_30_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1475,7 +1626,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_31_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1507,7 +1658,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_32_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1539,7 +1690,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_33_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1571,7 +1722,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_34_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1603,7 +1754,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_35_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>
@@ -1635,7 +1786,7 @@
         <mesh filename="file://$(find full_robot)/assets/rolete.stl"/>
       </geometry>
       <material name="rolete_36_material">
-        <color rgba="0.301961 0.301961 0.301961 1"/>
+        <color rgba="0 0 0 1"/>
       </material>
     </visual>
     <collision>

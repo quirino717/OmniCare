@@ -286,184 +286,19 @@ Visualization Manager:
       Value: true
       Visual Enabled: true
     - Class: rviz_default_plugins/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base:
-          Value: true
-        end_effector:
-          Value: true
-        link_1_manip:
-          Value: true
-        link_2_manip:
-          Value: true
-        roda:
-          Value: true
-        roda_2:
-          Value: true
-        roda_3:
-          Value: true
-        rolete:
-          Value: true
-        rolete_10:
-          Value: true
-        rolete_11:
-          Value: true
-        rolete_12:
-          Value: true
-        rolete_13:
-          Value: true
-        rolete_14:
-          Value: true
-        rolete_15:
-          Value: true
-        rolete_16:
-          Value: true
-        rolete_17:
-          Value: true
-        rolete_18:
-          Value: true
-        rolete_19:
-          Value: true
-        rolete_2:
-          Value: true
-        rolete_20:
-          Value: true
-        rolete_21:
-          Value: true
-        rolete_22:
-          Value: true
-        rolete_23:
-          Value: true
-        rolete_24:
-          Value: true
-        rolete_25:
-          Value: true
-        rolete_26:
-          Value: true
-        rolete_27:
-          Value: true
-        rolete_28:
-          Value: true
-        rolete_29:
-          Value: true
-        rolete_3:
-          Value: true
-        rolete_30:
-          Value: true
-        rolete_31:
-          Value: true
-        rolete_32:
-          Value: true
-        rolete_33:
-          Value: true
-        rolete_34:
-          Value: true
-        rolete_35:
-          Value: true
-        rolete_36:
-          Value: true
-        rolete_4:
-          Value: true
-        rolete_5:
-          Value: true
-        rolete_6:
-          Value: true
-        rolete_7:
-          Value: true
-        rolete_8:
-          Value: true
-        rolete_9:
-          Value: true
       Marker Scale: 0.5
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        base:
-          link_1_manip:
-            link_2_manip:
-              end_effector:
-                {}
-          roda:
-            rolete:
-              {}
-            rolete_10:
-              {}
-            rolete_11:
-              {}
-            rolete_12:
-              {}
-            rolete_2:
-              {}
-            rolete_3:
-              {}
-            rolete_4:
-              {}
-            rolete_5:
-              {}
-            rolete_6:
-              {}
-            rolete_7:
-              {}
-            rolete_8:
-              {}
-            rolete_9:
-              {}
-          roda_2:
-            rolete_13:
-              {}
-            rolete_14:
-              {}
-            rolete_15:
-              {}
-            rolete_16:
-              {}
-            rolete_17:
-              {}
-            rolete_18:
-              {}
-            rolete_19:
-              {}
-            rolete_20:
-              {}
-            rolete_21:
-              {}
-            rolete_22:
-              {}
-            rolete_23:
-              {}
-            rolete_24:
-              {}
-          roda_3:
-            rolete_25:
-              {}
-            rolete_26:
-              {}
-            rolete_27:
-              {}
-            rolete_28:
-              {}
-            rolete_29:
-              {}
-            rolete_30:
-              {}
-            rolete_31:
-              {}
-            rolete_32:
-              {}
-            rolete_33:
-              {}
-            rolete_34:
-              {}
-            rolete_35:
-              {}
-            rolete_36:
-              {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -510,25 +345,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.9070789813995361
+      Distance: 1.006426453590393
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.007129230070859194
-        Y: 0.15819497406482697
-        Z: 0.11697445064783096
+        X: 0.12255290150642395
+        Y: 0.206599622964859
+        Z: 0.21873119473457336
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5097970962524414
+      Pitch: 0.46979713439941406
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.60353422164917
+      Yaw: 4.288527965545654
     Saved: ~
 Window Geometry:
   Displays:
