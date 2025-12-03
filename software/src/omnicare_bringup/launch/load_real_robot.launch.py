@@ -208,8 +208,30 @@ def generate_launch_description():
         ),
     )
 
+    hri_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('omnicare_expression'),
+                'launch',
+                'expression_system.launch.py'
+            )
+        ),
+    )
 
-    
+    behavior_node = Node(
+        package='omnicare_behavior',
+        executable='behavior_manager',
+        name='behavior_manager',
+        output='screen',
+    )
+
+    serial_interface_node = Node(
+        package='serial_interface_pkg',
+        executable='serial_interface',
+        name='serial_interface',
+        output='screen',
+    )
+
     return LaunchDescription([
         declare_namespace_cmd,
         log_level,
@@ -229,5 +251,8 @@ def generate_launch_description():
         joint_state_broadcaster_event_handler, #ROS2_CONTROL
         robot_localization_node, #EKF + Publish Odom frame to transform
         camera_launch,
-        floor_detector_launch
+        floor_detector_launch,
+        hri_launch,
+        behavior_node,
+        serial_interface_node
     ])

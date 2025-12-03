@@ -34,11 +34,11 @@ LABELS = {
 }
 
 TIMELINE = {
-    0:                                  "start",
-    1:                   "pre_moviments_anchor",
-    2:                   "pos_moviments_anchor",
-    3:                    "manipulation_anchor",
-    4:                    "led_and_buzz_anchor",
+    1:                                  "start",
+    2:                   "pre_moviments_anchor",
+    3:                   "pos_moviments_anchor",
+    4:                    "manipulation_anchor",
+    5:                    "led_and_buzz_anchor",
 }
 # tolerância (ms) para disparar um evento ao redor do tempo alvo
 EPS_MS = 120
@@ -61,7 +61,7 @@ class ExpressionsPlayer(Node):
         self._fired_ids = set()          # ids (índices) de eventos já disparados
         self.exit_idle_pending = False     # pedido para sair do idle ao fim do ciclo atual
         self.resume_target_ms = None       # para onde pular quando sair do idle
-        self.count_state = 0
+        self.count_state = 1
 
         # estado de timeline/idle
         self.first_time = True

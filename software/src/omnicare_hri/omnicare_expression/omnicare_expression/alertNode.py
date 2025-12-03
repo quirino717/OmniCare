@@ -34,8 +34,9 @@ import re
 import serial
 import rclpy
 from rclpy.node import Node
+from rclpy.duration import Duration
 from geometry_msgs.msg import Twist
-from action_msgs.msg import GoalStatusArray
+from action_msgs.msg import GoalStatusArray, GoalStatus
 from std_msgs.msg import Bool
 
 try:
@@ -47,7 +48,7 @@ except Exception as e:
 
 
 # ---------------- Defaults ----------------
-DEFAULT_PORT            = '/dev/ttyUSB0'
+DEFAULT_PORT            = '/dev/ttyUSB1'
 DEFAULT_BAUD            = 115200
 DEFAULT_LIN_EPS         = 0.05   # m/s
 DEFAULT_ANG_EPS         = 0.08   # rad/s
@@ -56,9 +57,7 @@ DEFAULT_IDLE_CONFIRM_S  = 10.0   # require this time truly idle to show Blue
 DEFAULT_REINFORCE_S     = 1.0
 
 DEFAULT_STATUS_TOPICS = [
-    '/navigate_to_pose/_action/status',
-    '/follow_waypoints/_action/status',
-    '/omnicare/elevator/enter_elevator/_action/status',
+    '/omnicare/elevator/enter_elevator/_action/status'
 ]
 
 DEFAULT_RUNMISSION_FB_TOPIC = '/omnicare/behavior/run_mission/_action/feedback'
@@ -192,20 +191,7 @@ class AlertNode(Node):
                 self.maybe_send()
 
     def cb_status(self, msg: GoalStatusArray):
-        """
-        Watch action statuses.
-        active codes   = 0, 1, 2, 3  (UNKNOWN, ACCEPTED, EXECUTING, CANCELING)
-        terminal error = 4, 5        (ABORTED, CANCELED)
-        """
-        active_codes = (0, 1, 2, 3)
-        error_codes  = (4, 5)
-        had_active = any(s.status in active_codes for s in msg.status_list)
-        had_error  = any(s.status in error_codes  for s in msg.status_list)
-
-
-        self.goal_active = had_active
-        if had_error:
-            self.error_flag = True  # immediate Red
+        pass
 
     def cb_runmission_fb(self, msg):
         """

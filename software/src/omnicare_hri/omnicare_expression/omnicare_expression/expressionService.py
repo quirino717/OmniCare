@@ -11,9 +11,12 @@ from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String, UInt16, UInt8, Bool
+from std_msgs.msg import String, Int16MultiArray, UInt8, Bool
+from std_srvs.srv import Trigger
 
 from omnicare_msgs.srv import OmniMove, MoveArm, LEDandBuzz
+from omnicare_msgs.msg import MotorsPWM
+
 
 class ExpressionServicesNode(Node):
     """
@@ -29,8 +32,8 @@ class ExpressionServicesNode(Node):
         # Publishers subjacentes (ajuste tópicos conforme seu stack):
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
 
-        # Simples: publicamos uma string com a ação do braço (troque por msg/serviço próprio do seu manipulador)
-        self.arm_cmd_pub = self.create_publisher(String, '/omnicare/arm/cmd', 10)
+        # Simples: publicamos uma string com a ação do braço 
+        self.arm_cmd_pub = self.create_publisher(MotorsPWM, '/omnicare/hri/manip_control', 10)
 
         # Buzzer simples: frequência em Hz e pattern (tópicos separados para clareza)
         self.led_and_buzzer_pub = self.create_publisher(Bool, '/omnicare/hri/anthem', 10)
@@ -51,6 +54,9 @@ class ExpressionServicesNode(Node):
         self.srv_buzz = self.create_service(LEDandBuzz,
                                             '/omnicare/expression/buzzer',
                                             self.handle_buzzer)
+        
+        self.imperial_cli = self.create_client(Trigger, '/omnicare/hri/imperial_march')
+        
 
         # Mutex para garantir um movimento por vez (evita sobreposição de threads de movimento)
         self._move_lock = threading.Lock()
@@ -82,17 +88,19 @@ class ExpressionServicesNode(Node):
             response.message = 'Movimento já em execução. Tente novamente após concluir/parar.'
             return response
 
+        # ---------- Serviço 1: OmniDirecional ----------  
         def do_motion():
             with self._move_lock:
                 self._stop_move_flag = False
                 self.get_logger().info(f'Iniciando vai-e-vem: axis={axis}, speed={speed}, duration={duration}s, freq={freq}Hz')
+                twist = Twist()                
 
                 start = time.time()
                 rate_hz = 50.0  # 50 Hz de atualização
                 dt = 1.0 / rate_hz
                 omega = 2.0 * math.pi * (freq if freq > 0.0 else 0.5)  # default 0.5 Hz se freq=0
 
-                while (time.time() - start) < duration and not self._stop_move_flag and rclpy.ok():
+                while (time.time() - start) < duration + 4 and not self._stop_move_flag and rclpy.ok():
                     t = time.time() - start
                     v = speed * math.sin(omega * t)  # perfil senoidal
 
@@ -102,6 +110,10 @@ class ExpressionServicesNode(Node):
                     else:
                         twist.linear.x = v
 
+                    if (time.time() - start) > duration:
+                        # Notifica fim do movimento 
+                        self.finish_pub.publish(String(data='done'))
+
                     self.cmd_vel_pub.publish(twist)
                     time.sleep(dt)
 
@@ -109,8 +121,7 @@ class ExpressionServicesNode(Node):
                 self.cmd_vel_pub.publish(Twist())
                 self.get_logger().info('Movimento concluído.')
 
-                # Notifica fim do movimento 
-                self.finish_pub.publish(String(data='done'))
+               
 
         self._move_thread = threading.Thread(target=do_motion, daemon=True)
         self._move_thread.start()
@@ -120,24 +131,36 @@ class ExpressionServicesNode(Node):
         return response
 
     # ---------- Serviço 2: Manipulador ----------
-    # TODO: implemente conforme seu manipulador real (Esperando o @Thiago implementar)
     def handle_move_arm(self, request: MoveArm.Request, response: MoveArm.Response):
         action = (request.action or '').strip()
         dur = max(0.0, float(request.duration))
         self.get_logger().info(f'Requisição de movimento do braço: action="{action}", duration={dur:.2f}s')
-        
-        # Notifica fim do movimento (apenas para simular)
-        self.finish_pub.publish(String(data='done'))
 
-        if not action:
-            response.success = False
-            response.message = 'action não pode ser vazio.'
-            return response
 
-        # Publica a ação como string (troque por seu protocolo real)
-        msg = String()
-        msg.data = f'{action}:{dur:.2f}'
-        self.arm_cmd_pub.publish(msg)
+        # array = Int16MultiArray()
+        # array.data
+        # Publica 3 vezes rapidamente para garantir envio
+        for _ in range(3):
+            self.arm_cmd_pub.publish(MotorsPWM(data=[255, 150, 0]))
+            time.sleep(0.05)  # 50 ms entre mensagens (evita flooding)
+
+        # Manter padrão por "dur" e depois silenciar (sem bloquear o servidor)
+        def auto_stop_manipulation():
+            time.sleep(dur)
+            # Publica 3 vezes rapidamente para garantir envio
+            for _ in range(3):
+                self.arm_cmd_pub.publish(MotorsPWM(data=[0, 0, 0])) # Para movimentação
+                time.sleep(0.05)  # 50 ms entre mensagens (evita flooding)
+
+            self.get_logger().info('Manipulação: stop automático após duração.')
+
+            # Notifica fim da movimentação
+            self.finish_pub.publish(String(data='done'))
+
+
+        if dur > 0.0:
+            self.get_logger().info('Thread iniciada')
+            threading.Thread(target=auto_stop_manipulation, daemon=True).start()
 
         self.get_logger().info(f'Manipulador acionado: action="{action}" duration={dur:.2f}s')
         response.success = True
@@ -151,28 +174,59 @@ class ExpressionServicesNode(Node):
         # Ativa o buzzer
         self.buzzer_pub.publish(Bool(data=True))
 
-        # Publica parâmetros (implemente o lado do firmware para interpretar)
+        # Publica parâmetros (firmware pega e trata o que receber)
         self.led_and_buzzer_pub.publish(Bool(data=True))
         
         self.get_logger().info(f'Buzzer: duration={dur:.2f}s')
 
         # Manter padrão por "dur" e depois silenciar (sem bloquear o servidor)
-        def auto_stop():
+        def auto_stop_buzzer():
             time.sleep(dur)
             # Silencia 
-            self.buzzer_pub.publish(Bool(data=False))
-            self.get_logger().info('Buzzer: stop automático após duração.')
+            #self.buzzer_pub.publish(Bool(data=False))
+            #self.get_logger().info('Buzzer: stop automático após duração.')
 
             # Notifica fim do buzzer
             self.finish_pub.publish(String(data='done'))
 
 
         if dur > 0.0:
-            threading.Thread(target=auto_stop, daemon=True).start()
+            threading.Thread(target=auto_stop_buzzer, daemon=True).start()
 
-        response.success = True
-        response.message = 'Buzzer acionado.'
+        # chama a Marcha Imperial
+        # ok = self.handle_imperial_march()
+        # self.get_logger().info('Marcha imperial tocada, publicar o done!')
+        # response.success = ok
+        # response.message = "Imperial March tocada" if ok else "Falha ao tocar Marcha Imperial"
+        
+        # # Notifica fim do movimento 
+        # self.finish_pub.publish(String(data='done'))
+
+        # response.success = True
+        # response.message = 'Buzzer acionado.'
         return response
+    
+    # ==============================
+    # Serviço: Marcha Imperial
+    # ==============================
+    def handle_imperial_march(self):
+        """Callback que chama o serviço /omnicare/hri/imperial_march e aguarda retorno."""
+        # Cria o cliente do serviço (se ainda não existir)
+        if not hasattr(self, 'imperial_cli'):
+            self.imperial_cli = self.create_client(Trigger, '/omnicare/hri/imperial_march')
+
+        # Aguarda disponibilidade
+        if not self.imperial_cli.wait_for_service(timeout_sec=2.0):
+            self.get_logger().error('Serviço /omnicare/hri/imperial_march indisponível.')
+            return False
+
+        # Cria e envia a requisição (Trigger não possui parâmetros)
+        req = Trigger.Request()
+        future = self.imperial_cli.call_async(req)
+        self.get_logger().info('Chamando serviço /omnicare/hri/imperial_march...')
+
+        # Verifica resposta
+        return True
 
     # ---------- Método para parar movimento em andamento ----------
     def stop_motion(self):

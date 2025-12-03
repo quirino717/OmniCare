@@ -17,7 +17,8 @@ def extract_map_configuration(world,in_simulation):
         maps_config = yaml.safe_load(file)
     
     # Verificar qual mundo está sendo selecionado
-    world_map = maps_config["FEI"] if world == "FEI" else maps_config["HU_USP"]
+    world_map = maps_config[world]
+   # world_map = maps_config["FEI"] if world == "FEI" else maps_config["HU_USP"]
 
     # Adiciona o prefixo do pacote nos caminhos
     for floor_dict in [world_map["real"], world_map["sim"]]:

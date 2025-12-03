@@ -22,7 +22,7 @@ class SerialInterfacePublisher(Node):
         self.motors_data_publisher_
 
         self.motors_pwm_subscriber_ = self.create_subscription(
-            MotorsPWM, 'motors_pwm', self.motors_pwm_callback, 10)
+            MotorsPWM, 'omnicare_msgs/msg/MotorsPWM', self.motors_pwm_callback, 10)
         self.motors_pwm_subscriber_
         self.pwm_data = MotorsPWM()
 
