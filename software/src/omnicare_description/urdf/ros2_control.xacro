@@ -8,7 +8,7 @@
             <param name="right_wheel_name">wheel1_speed</param>
             <param name="back_wheel_name">wheel3_speed</param>
             <param name="loop_rate">30</param>
-            <param name="device">/dev/ttyACM0</param>
+            <param name="device">/dev/usb-user</param>
             <param name="baud_rate">115200</param>
             <param name="timeout_ms">1000</param>
             <param name="enc_counts_per_rev">12770</param>
