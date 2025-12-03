@@ -47,7 +47,7 @@ bt_navigator:
     robot_base_frame: base_link
     odom_topic: /odom
     bt_loop_duration: 10
-    default_server_timeout: 60
+    default_server_timeout: 300
     default_nav_to_pose_bt_xml: $(find-pkg-share navigation_pkg)/config/nav/door_robust_nav_to_pose.xml
     default_nav_through_poses_bt_xml: $(find-pkg-share navigation_pkg)/config/nav/door_robust_nav_to_pose.xml
     # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
@@ -110,20 +110,21 @@ bt_navigator_navigate_to_pose_rclcpp_node:
   ros__parameters:
     use_sim_time: False
 
+# primary_controller: "nav2_mppi_controller::MPPIController"
+
+# # Rotation shim controller
+# angular_dist_threshold: 0.785
+# forward_sampling_distance: 0.5
+# rotate_to_heading_angular_vel: 1.8
+# max_angular_accel: 3.2
+# simulate_ahead_time: 1.0
+
 controller_server:
   ros__parameters:
     use_sim_time: False
     controller_frequency: 20.0
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      # primary_controller: "nav2_mppi_controller::MPPIController"
-
-      # # Rotation shim controller
-      # angular_dist_threshold: 0.785
-      # forward_sampling_distance: 0.5
-      # rotate_to_heading_angular_vel: 1.8
-      # max_angular_accel: 3.2
-      # simulate_ahead_time: 1.0
 
       # MPPI controller
       time_steps: 56
@@ -132,15 +133,14 @@ controller_server:
       vx_std: 0.2
       vy_std: 0.2
       wz_std: 0.4
-      vx_max: 4.5
-      vx_min: -4.5
-      vy_max: 4.5
-      vx_min: -4.5
-      wz_max: 6.0
+      vx_max: 0.16
+      vx_min: -0.16
+      vy_max: 0.16
+      wz_max: 0.33
       iteration_count: 1
       prune_distance: 1.7
       transform_tolerance: 0.1
-      inversion_yaw_tolerance: 0.2
+      inversion_yaw_tolerance: 0.05
       temperature: 0.3
       gamma: 0.015
       motion_model: "Omni"
@@ -221,7 +221,7 @@ local_costmap:
       width: 5
       height: 5
       resolution: 0.05
-      robot_radius: 0.15
+      robot_radius: 0.10
       plugins: ["obstacle_layer", "denoise_layer", "inflation_layer"]
 
       obstacle_layer:
