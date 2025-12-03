@@ -22,7 +22,7 @@ class SerialInterfacePublisher(Node):
         self.motors_data_publisher_
 
         self.motors_pwm_subscriber_ = self.create_subscription(
-            MotorsPWM, 'omnicare_msgs/msg/MotorsPWM', self.motors_pwm_callback, 10)
+            MotorsPWM, 'omnicare/hri/manip_control', self.motors_pwm_callback, 10)
         self.motors_pwm_subscriber_
         self.pwm_data = MotorsPWM()
 
@@ -63,7 +63,7 @@ class SerialInterfacePublisher(Node):
                 
                 # Send over serial
                 self.ser.write(pwm_string.encode())
-                self.get_logger().info(f"Sent over serial: {pwm_string.strip()}")
+                self.get_logger().debug(f"Sent over serial: {pwm_string.strip()}")
 
                 self.get_logger().debug(
                     f"PWM Data: {self.pwm_data.data[MotorsPWM.MOTOR_0]:03} / "
@@ -72,14 +72,14 @@ class SerialInterfacePublisher(Node):
 
                 # Lê 4 bytes enviados pelo STM32
                 linha = self.ser.readline().decode('utf-8').strip()  
-                self.get_logger().info(f'{linha}')
+                self.get_logger().debug(f'{linha}')
                 valores = list(map(int, linha.split()))
-                print(valores)
+                #print(valores)
 
-                motors_data_msg.motor_speed = valores[0]
-                motors_data_msg.motor_error = valores[1]
-                motors_data_msg.motor_dt = valores[2]
-                motors_data_msg.motor_pwm = valores[3]
+                #motors_data_msg.motor_speed = valores[0]
+                # motors_data_msg.motor_error = valores[1]
+                # motors_data_msg.motor_dt = valores[2]
+                # motors_data_msg.motor_pwm = valores[3]
 
                 # #publicando a data no tópico
                 self.motors_data_publisher_.publish(motors_data_msg)
