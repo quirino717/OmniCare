@@ -130,17 +130,17 @@ controller_server:
       time_steps: 56
       model_dt: 0.05
       batch_size: 2000
-      vx_std: 0.2
-      vy_std: 0.2
+      vx_std: 0.3
+      vy_std: 0.3
       wz_std: 0.4
       vx_max: 0.16
       vx_min: -0.16
-      vy_max: 0.16
-      wz_max: 0.33
+      vy_max: 0.0
+      wz_max: 0.45
       iteration_count: 1
       prune_distance: 1.7
       transform_tolerance: 0.1
-      inversion_yaw_tolerance: 0.05
+      inversion_yaw_tolerance: 0.1
       temperature: 0.3
       gamma: 0.015
       motion_model: "Omni"
@@ -204,6 +204,12 @@ controller_server:
         threshold_to_consider: 0.5
         max_angle_to_furthest: 1.0
         mode: 0
+      general_goal_checker:
+        stateful: True
+        plugin: "nav2_controller::SimpleGoalChecker"
+        xy_goal_tolerance: 0.3
+        yaw_goal_tolerance: 0.1
+
       # TwirlingCritic:
       #   enabled: true
       #   twirling_cost_power: 1
@@ -289,7 +295,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 2.58
-        inflation_radius: 1.75
+        inflation_radius: 0.75
       always_send_full_costmap: True
 
 map_server:
