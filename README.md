@@ -303,3 +303,26 @@ Isso significa que você pode usar, copiar, modificar, mesclar, publicar, distri
 
 Para mais detalhes, consulte o arquivo [LICENSE](LICENSE).
 
+## 📝 TODO — Documentação dos Pacotes
+
+A seguir está o checklist de pacotes do OmniCare que terão documentação detalhada seguindo o mesmo padrão adotado no `omnicare_behavior`.
+
+### 📦 Pacotes ROS 2
+
+- [x] **omnicare_behavior** — Behavior Manager (FSM, Action Server, multi-andares)
+- [ ] **omnicare_bringup** — Inicialização do robô (real e simulação)
+- [ ] **omnicare_control**
+  - [ ] omnidrive_stm32
+  - [ ] serial_interface_pkg
+- [ ] **omnicare_description** — URDF, meshes e plugins
+- [ ] **omnicare_hri**
+  - [ ] omnicare_expression
+- [ ] **omnicare_msgs** — Mensagens, serviços e actions customizadas
+- [ ] **omnicare_navigation** — Nav2, LiDAR, IMU e mapeamento
+  - [ ] navigation_pkg
+- [ ] **omnicare_simulation** — Gazebo, launches e serviços de teleporte
+- [ ] **omnicare_vision**
+  - [ ] floor_detector
+  - [ ] dataset_generator
+
+
