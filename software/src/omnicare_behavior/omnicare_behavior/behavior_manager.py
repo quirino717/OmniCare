@@ -50,6 +50,7 @@ class ElevatorBehaviorManager(Node):
 
         # Pubs
         self.teleop_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.behavior_pub = self.create_publisher(String, '/omnicare/hri/idle_done', 10)
 
         # Subs
         self.checkpoints_sub = self.create_subscription(Bool,'/checkpoint_done',self._checkpoints_callback,10)
@@ -86,7 +87,7 @@ class ElevatorBehaviorManager(Node):
         # Instanciando o Watchdog
         self.watchdog = Watchdog(
             node=self,
-            timeout_sec=10.0,
+            timeout_sec=15.0,
             check_period_sec=0.2,
             on_timeout=self._on_watchdog_timeout
         )
@@ -105,6 +106,7 @@ class ElevatorBehaviorManager(Node):
         self.world = self.goal_.world
         self.actual_floor = self.goal_.initial
         self.target_floor = self.goal_.target
+        self.presentation = self.goal_.presentation
 
         self.get_logger().info(f"Mission received: World: {self.world} | from {self.actual_floor} to {self.target_floor} | Simulation: {self.simulation}")
         rate = self.create_rate(10) #10 Hz
@@ -203,7 +205,17 @@ class ElevatorBehaviorManager(Node):
         self.get_logger().info(f"Received checkpoint done signal: {msg.data}")
         if msg.data:
             self.get_logger().info("Checkpoint atingido!")
-            if self.start_navigation: self.current_state = 'ACTIVATE_INFERENCE'
+
+            # Go Horse for TCC 2 presentation!
+            if self.presentation: 
+                i = 0
+                while (i < 8): 
+                    self.behavior_pub.publish(String(data='done'))
+                    i = i + 1
+                self.current_state = 'DONE'
+
+
+            elif self.start_navigation: self.current_state = 'ACTIVATE_INFERENCE'
             else: self.current_state = 'DONE'
     
     def _cmd_vel_sub_cb(self, msg):
