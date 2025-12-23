@@ -310,9 +310,9 @@ A seguir está o checklist de pacotes do OmniCare que terão documentação deta
 ### 📦 Pacotes ROS 2
 
 - [x] **omnicare_behavior** — Behavior Manager (FSM, Action Server, multi-andares)
-- [ ] **omnicare_bringup** — Inicialização do robô (real e simulação)
+- [x] **omnicare_bringup** — Inicialização do robô (real e simulação)
 - [ ] **omnicare_control**
-  - [ ] omnidrive_stm32
+  - [x] omnidrive_stm32
   - [ ] serial_interface_pkg
 - [ ] **omnicare_description** — URDF, meshes e plugins
 - [ ] **omnicare_hri**
